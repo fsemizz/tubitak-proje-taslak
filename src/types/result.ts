@@ -1,25 +1,39 @@
-import type { GameCategory } from './game';
+export interface LevelAttemptResult {
+  levelId: string;
+  levelOrder: number;
+  isCorrect: boolean;
+  attempts: number;
+  pointsEarned: number;
+  timeSpentSeconds: number;
+}
 
-export interface GameResult {
+export type LevelAttemptResultInput = LevelAttemptResult;
+
+export interface GameCompletionSummary {
   id: string;
   studentId: string;
   studentName: string;
-  gameId: GameCategory;
+  gameId: string;
   gameTitle: string;
-  levelNumber: number;
-  score: number; // 0-100
-  stars: number; // 1-3
-  completionTimeSeconds: number;
-  attemptsCount: number;
+  levelResults: LevelAttemptResult[];
+  totalPoints: number;
+  maxPoints: number;
+  starRating: 1 | 2 | 3;
   completedAt: string;
+  totalTimeSeconds: number;
+}
+
+export type GameCompletionSummaryInput = Omit<GameCompletionSummary, 'id' | 'completedAt'>;
+
+export interface ResultsFilter {
+  gameId?: string;
+  studentId?: string;
 }
 
 export interface StudentStats {
   studentId: string;
-  studentName: string;
-  totalGamesPlayed: number;
-  totalScore: number;
-  averageScore: number;
-  totalStars: number;
-  lastActive: string;
+  gamesPlayed: number;
+  totalPoints: number;
+  averageStars: number;
+  lastPlayedAt?: string;
 }
