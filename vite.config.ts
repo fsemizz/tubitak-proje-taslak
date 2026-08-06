@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 export default defineConfig({
-  base: './',
+  base: './tubitak-proje-taslak/',
   plugins: [
     react(),
     tailwindcss(),
@@ -20,8 +20,8 @@ export default defineConfig({
         background_color: '#F0F4FF',
         display: 'standalone',
         orientation: 'any',
-        start_url: '/tubitak-proje/',
-        scope: '/tubitak-proje/',
+        start_url: '/tubitak-proje-taslak/',
+        scope: '/tubitak-proje-taslak/',
         icons: [
           {
             src: 'icons/icon-192x192.png',
