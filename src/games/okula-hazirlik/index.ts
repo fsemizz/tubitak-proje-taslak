@@ -1,0 +1,1 @@
+export { okulaHazirlikMeta } from './meta';

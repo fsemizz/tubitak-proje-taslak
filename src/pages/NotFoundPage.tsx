@@ -12,7 +12,7 @@ export default function NotFoundPage() {
         title="Sayfa bulunamadı"
         description="Aradığın sayfa taşınmış veya hiç var olmamış olabilir."
         action={
-          <Button render={<Link to={ROUTE_PATHS.home} />} size="sm">
+          <Button render={<Link to={ROUTE_PATHS.home} />} nativeButton={false} size="sm">
             Ana Sayfaya Dön
           </Button>
         }

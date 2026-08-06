@@ -9,6 +9,34 @@ export interface LevelAttemptResult {
 
 export type LevelAttemptResultInput = LevelAttemptResult;
 
+export interface HouseNavLevelMetric {
+  levelId: string;
+  levelLabel: string;
+  starRating: 1 | 2 | 3;
+  accuracyTier: 1 | 2 | 3;
+  pathEfficiencyPct: number;
+  stepsUsed: number;
+  shortestPathLength: number;
+  unnecessarySteps: number;
+  commandEntriesUsed: number;
+  enterErrors: number;
+  orderErrors: number;
+  attempts: number;
+  hintUsed: boolean;
+  planningSuccess: boolean;
+  timeSpentSeconds: number;
+}
+
+export interface HouseNavMetrics {
+  levels: HouseNavLevelMetric[];
+  kbsScore: number;
+  dogrulukPct: number;
+  planlamaPct: number;
+  yonBulmaPct: number;
+  problemCozmePct: number;
+  gorevTamamlamaPct: number;
+}
+
 export interface GameCompletionSummary {
   id: string;
   studentId: string;
@@ -21,6 +49,7 @@ export interface GameCompletionSummary {
   starRating: 1 | 2 | 3;
   completedAt: string;
   totalTimeSeconds: number;
+  houseNavMetrics?: HouseNavMetrics;
 }
 
 export type GameCompletionSummaryInput = Omit<GameCompletionSummary, 'id' | 'completedAt'>;

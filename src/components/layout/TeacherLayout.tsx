@@ -23,12 +23,12 @@ export function TeacherLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background sm:flex-row">
-      <aside className="flex shrink-0 flex-col gap-6 border-b border-border bg-card px-4 py-5 sm:w-56 sm:border-b-0 sm:border-r sm:py-6">
+      <aside className="flex shrink-0 flex-col gap-6 border-b border-slate-800 bg-slate-900 px-4 py-5 text-white sm:w-56 sm:border-b-0 sm:border-r sm:py-6">
         <Link to={ROUTE_PATHS.home} className="flex items-center gap-2">
           <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white">
             <Sparkles className="size-5" />
           </span>
-          <span className="font-display text-lg font-extrabold text-foreground">{APP_NAME}</span>
+          <span className="font-display text-lg font-extrabold text-white">{APP_NAME}</span>
         </Link>
 
         <nav className="flex gap-1 sm:flex-col">
@@ -40,7 +40,7 @@ export function TeacherLayout() {
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive ? 'bg-indigo-100 text-indigo-700' : 'text-muted-foreground hover:bg-muted',
+                  isActive ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:bg-slate-800 hover:text-white',
                 )
               }
             >
@@ -51,8 +51,13 @@ export function TeacherLayout() {
         </nav>
 
         <div className="mt-auto hidden flex-col gap-2 sm:flex">
-          <p className="truncate text-xs font-medium text-muted-foreground">{session?.displayName}</p>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <p className="truncate text-xs font-medium text-slate-400">{session?.displayName}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-slate-700 bg-slate-800 text-white hover:bg-slate-700 hover:text-white"
+            onClick={handleLogout}
+          >
             <LogOut className="size-4" /> Çıkış Yap
           </Button>
         </div>

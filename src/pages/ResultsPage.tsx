@@ -36,7 +36,7 @@ export default function ResultsPage() {
           title="Henüz sonuç yok"
           description="Bu oyunu tamamladığında sonuçların burada görünecek."
           action={
-            <Button render={<Link to={ROUTE_PATHS.home} />} size="sm">
+            <Button render={<Link to={ROUTE_PATHS.home} />} nativeButton={false} size="sm">
               Kataloğa Dön
             </Button>
           }

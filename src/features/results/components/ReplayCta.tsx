@@ -13,7 +13,7 @@ export function ReplayCta({ onReplay }: ReplayCtaProps) {
       <Button variant="outline" className="flex-1" onClick={onReplay}>
         <RotateCcw className="size-4" /> Tekrar Oyna
       </Button>
-      <Button className="flex-1" render={<Link to={ROUTE_PATHS.home} />}>
+      <Button className="flex-1" render={<Link to={ROUTE_PATHS.home} />} nativeButton={false}>
         <Home className="size-4" /> Oyun Kataloğuna Dön
       </Button>
     </div>

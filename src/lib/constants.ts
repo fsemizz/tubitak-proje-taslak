@@ -5,6 +5,7 @@ import {
   Repeat,
   GitBranch,
   Puzzle,
+  Home,
   Users,
   Trophy,
   Clock3,
@@ -21,6 +22,7 @@ export const ICON_MAP: Record<GameIconKey, LucideIcon> = {
   loop: Repeat,
   conditional: GitBranch,
   matching: Puzzle,
+  home: Home,
 };
 
 export function getGameIcon(key: GameIconKey): LucideIcon {
@@ -95,6 +97,15 @@ export const CATEGORY_THEME: Record<GameCategory, CategoryPalette> = {
     badgeText: 'text-sky-700',
     ring: 'ring-sky-300',
     solidBg: 'bg-sky-600',
+  },
+  planning: {
+    gradientFrom: 'from-teal-500',
+    gradientTo: 'to-cyan-500',
+    accent: 'teal',
+    badgeBg: 'bg-teal-100',
+    badgeText: 'text-teal-700',
+    ring: 'ring-teal-300',
+    solidBg: 'bg-teal-600',
   },
 };
 

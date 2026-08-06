@@ -3,6 +3,9 @@ import { Trophy, Star, Clock3, Gamepad2 } from 'lucide-react';
 import { StatTile } from '@/components/primitives/StatTile';
 import { StudentScoreChart } from '@/features/teacher/components/StudentScoreChart';
 import { ResultsTable } from '@/features/teacher/components/ResultsTable';
+import { GameBreakdownTable } from '@/features/teacher/components/GameBreakdownTable';
+import { StudentSkillProfileCard } from '@/features/teacher/components/StudentSkillProfileCard';
+import { HouseNavReportCard } from '@/features/teacher/components/HouseNavReportCard';
 import { SectionHeading } from '@/components/primitives/SectionHeading';
 import { requireTeacherLoader } from '@/app/routeGuards';
 import { resultsService, teacherService } from '@/services/serviceProvider';
@@ -47,6 +50,26 @@ export default function TeacherStudentDetailPage() {
           label="Son Oyun"
           value={stats.lastPlayedAt ? new Date(stats.lastPlayedAt).toLocaleDateString('tr-TR') : '—'}
         />
+      </div>
+
+      {(() => {
+        const houseNavResult = results.find((r) => r.houseNavMetrics);
+        return (
+          <div className="flex flex-col gap-4">
+            <SectionHeading title="Beceri Profili" description="5 eksende algoritmik düşünme becerisi." />
+            <StudentSkillProfileCard
+              studentFirstName={student.firstName}
+              results={results}
+              kbsScore={houseNavResult?.houseNavMetrics?.kbsScore}
+            />
+            {houseNavResult?.houseNavMetrics && <HouseNavReportCard metrics={houseNavResult.houseNavMetrics} />}
+          </div>
+        );
+      })()}
+
+      <div className="flex flex-col gap-4">
+        <SectionHeading title="Oyun Bazlı Döküm" description="Hangi oyunu kaç kez oynadı, hangisinden kaç aldı." />
+        <GameBreakdownTable results={results} />
       </div>
 
       <div className="flex flex-col gap-4">

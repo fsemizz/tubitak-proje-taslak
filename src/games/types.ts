@@ -10,9 +10,16 @@ export interface GamePlayerProps<T extends GameLevel = GameLevel> {
   onExit: () => void;
 }
 
+export interface GameRootProps {
+  game: GameDefinition;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface GameModule {
   definition: GameDefinition;
   levels: GameLevel[];
-  PlayerComponent: LazyExoticComponent<ComponentType<GamePlayerProps<any>>>;
+  /** Standard single-file-per-level games render through GameShell with this. */
+  PlayerComponent?: LazyExoticComponent<ComponentType<GamePlayerProps<any>>>;
+  /** Games with a non-standard multi-level/campaign shape manage their own flow and render this instead. */
+  RootComponent?: LazyExoticComponent<ComponentType<GameRootProps>>;
 }

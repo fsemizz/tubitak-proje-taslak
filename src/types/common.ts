@@ -4,7 +4,8 @@ export type GameCategory =
   | 'debugging'
   | 'loops'
   | 'conditionals'
-  | 'matching';
+  | 'matching'
+  | 'planning';
 
 export type Difficulty = 'kolay' | 'orta' | 'zor';
 
@@ -21,4 +22,5 @@ export const CATEGORY_LABEL: Record<GameCategory, string> = {
   loops: 'Döngü',
   conditionals: 'Koşullu Düşünme',
   matching: 'Eşleştirme',
+  planning: 'Planlama & Yön Bulma',
 };

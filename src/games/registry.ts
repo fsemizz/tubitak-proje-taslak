@@ -8,6 +8,7 @@ import { debugMeta, debugLevels } from './debug-hunt-game';
 import { loopMeta, loopLevels } from './loop-builder-game';
 import { conditionalMeta, conditionalLevels } from './conditional-logic-game';
 import { matchingMeta, matchingLevels } from './matching-game';
+import { okulaHazirlikMeta } from './okula-hazirlik';
 
 export const gameRegistry: Record<string, GameModule> = {
   [sequencingMeta.id]: {
@@ -39,6 +40,15 @@ export const gameRegistry: Record<string, GameModule> = {
     definition: matchingMeta,
     levels: matchingLevels,
     PlayerComponent: lazy(() => import('./matching-game/MatchingGamePlayer')),
+  },
+  [okulaHazirlikMeta.id]: {
+    definition: okulaHazirlikMeta,
+    levels: [],
+    RootComponent: lazy(() =>
+      import('./okula-hazirlik/components/OkulaHazirlikGameRoot').then((m) => ({
+        default: m.OkulaHazirlikGameRoot,
+      })),
+    ),
   },
 };
 

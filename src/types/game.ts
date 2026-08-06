@@ -2,7 +2,14 @@ import type { GameCategory, Difficulty } from './common';
 
 export type GameStatus = 'available' | 'comingSoon';
 
-export type GameIconKey = 'sequencing' | 'pattern' | 'debug' | 'loop' | 'conditional' | 'matching';
+export type GameIconKey =
+  | 'sequencing'
+  | 'pattern'
+  | 'debug'
+  | 'loop'
+  | 'conditional'
+  | 'matching'
+  | 'home';
 
 export interface GameColorTheme {
   gradientFrom: string;
