@@ -89,24 +89,15 @@ export interface Position {
 
 export type GridCellType = 'empty' | 'wall' | 'start' | 'goal';
 
-export type LoopBlockType =
-  | 'forward1'
-  | 'forward2'
-  | 'forward3'
-  | 'turnLeft'
-  | 'turnRight'
-  | 'repeat2'
-  | 'repeat3'
-  | 'repeat4';
+export type LoopDirection = 'up' | 'down' | 'left' | 'right';
 
 export interface LoopLevel extends LevelBase {
   type: 'loop';
   grid: GridCellType[][];
   start: Position;
   goal: Position;
-  startDirection: 'up' | 'down' | 'left' | 'right';
-  maxBlocks: number;
-  availableBlocks: LoopBlockType[];
+  /** Max number of queued direction commands (each with its own repeat count) allowed for this level. */
+  maxEntries: number;
 }
 
 export interface ConditionalBranch {

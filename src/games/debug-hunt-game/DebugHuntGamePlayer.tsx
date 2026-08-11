@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Check, X } from 'lucide-react';
+import { ShakeOnError } from '@/components/primitives/ShakeOnError';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { DebugLevel } from '@/types/game';
@@ -8,9 +10,11 @@ export default function DebugHuntGamePlayer({
   level,
   onComplete,
 }: GamePlayerProps<DebugLevel>) {
+  const sounds = useGameSounds();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [wrongToken, setWrongToken] = useState(0);
   const [startedAt] = useState(() => Date.now());
 
   function selectStep(stepId: string) {
@@ -32,6 +36,8 @@ export default function DebugHuntGamePlayer({
         timeSpentSeconds,
       });
     } else {
+      sounds.playError();
+      setWrongToken((t) => t + 1);
       setStatus('wrong');
     }
   }
@@ -43,32 +49,34 @@ export default function DebugHuntGamePlayer({
         <p className="mt-1 text-muted-foreground">{level.instructions}</p>
       </div>
 
-      <ol className="flex flex-col gap-2">
-        {level.steps.map((step, idx) => {
-          const isSelected = selectedId === step.id;
-          const isBuggyRevealed = status === 'correct' && step.id === level.buggyStepId;
-          return (
-            <li key={step.id}>
-              <button
-                onClick={() => selectStep(step.id)}
-                disabled={status === 'correct'}
-                className={cn(
-                  'tap-target flex w-full items-center gap-3 rounded-lg border-2 bg-card px-4 py-3 text-left text-sm font-medium shadow-sm transition',
-                  'border-border hover:border-rose-300',
-                  isSelected && status === 'wrong' && 'border-rose-400 bg-rose-50',
-                  isBuggyRevealed && 'border-emerald-500 bg-emerald-50',
-                )}
-              >
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                  {idx + 1}
-                </span>
-                {step.label}
-                {isBuggyRevealed && <Check className="ml-auto size-4 text-emerald-600" />}
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+      <ShakeOnError trigger={wrongToken}>
+        <ol className="flex flex-col gap-2">
+          {level.steps.map((step, idx) => {
+            const isSelected = selectedId === step.id;
+            const isBuggyRevealed = status === 'correct' && step.id === level.buggyStepId;
+            return (
+              <li key={step.id}>
+                <button
+                  onClick={() => selectStep(step.id)}
+                  disabled={status === 'correct'}
+                  className={cn(
+                    'tap-target flex w-full items-center gap-3 rounded-lg border-2 bg-card px-4 py-3 text-left text-sm font-medium shadow-sm transition',
+                    'border-border hover:border-rose-300',
+                    isSelected && status === 'wrong' && 'border-rose-400 bg-rose-50',
+                    isBuggyRevealed && 'border-emerald-500 bg-emerald-50',
+                  )}
+                >
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+                    {idx + 1}
+                  </span>
+                  {step.label}
+                  {isBuggyRevealed && <Check className="ml-auto size-4 text-emerald-600" />}
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </ShakeOnError>
 
       {status === 'wrong' && (
         <div className="flex items-center gap-2 rounded-lg bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">

@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Star, Trophy, RotateCcw } from 'lucide-react';
+import { Home, Star, Trophy, RotateCcw, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
@@ -12,10 +13,23 @@ import type { HouseNavMetrics } from '@/types/result';
 interface GameCompleteScreenProps {
   metrics: HouseNavMetrics;
   totalTimeSeconds: number;
+  studentFirstName?: string;
   onReplay: () => void;
+  onPlayGameComplete?: () => void;
 }
 
-export function GameCompleteScreen({ metrics, totalTimeSeconds, onReplay }: GameCompleteScreenProps) {
+export function GameCompleteScreen({
+  metrics,
+  totalTimeSeconds,
+  studentFirstName,
+  onReplay,
+  onPlayGameComplete,
+}: GameCompleteScreenProps) {
+  useEffect(() => {
+    onPlayGameComplete?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const totalStars = metrics.levels.reduce((sum, l) => sum + l.starRating, 0);
   const maxStars = metrics.levels.length * 3;
   const totalCommands = metrics.levels.reduce((sum, l) => sum + l.commandEntriesUsed, 0);
@@ -34,7 +48,7 @@ export function GameCompleteScreen({ metrics, totalTimeSeconds, onReplay }: Game
       <CelebrationBurst />
       <div className="text-center">
         <h1 className="font-display text-2xl font-extrabold text-foreground">
-          Okula Hazırlık Görevi Tamamlandı!
+          {studentFirstName ? `Aferin, ${studentFirstName}!` : 'Okula Hazırlık Görevi Tamamlandı!'} 🎓
         </h1>
         <p className="mt-1 text-muted-foreground">Harika iş çıkardın, okula gitmeye hazırsın.</p>
       </div>
@@ -46,7 +60,7 @@ export function GameCompleteScreen({ metrics, totalTimeSeconds, onReplay }: Game
         <MiniStat label="Başarı" value={`%${successPct}`} />
       </div>
 
-      <Card className="w-full border-teal-200 bg-teal-50/50">
+      <Card className="w-full border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-50">
         <CardContent className="flex flex-col items-center gap-3 py-6">
           <div className="flex items-center gap-2">
             <Trophy className="size-5 text-teal-600" />
@@ -59,7 +73,9 @@ export function GameCompleteScreen({ metrics, totalTimeSeconds, onReplay }: Game
       </Card>
 
       <div className="w-full">
-        <h3 className="mb-2 text-sm font-bold text-foreground">Seviye Bazlı Yıldızlar</h3>
+        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-foreground">
+          <PartyPopper className="size-4 text-teal-600" /> Seviye Bazlı Yıldızlar
+        </h3>
         <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-xl border border-border">
           {metrics.levels.map((l) => (
             <li key={l.levelId} className="flex items-center justify-between bg-card px-4 py-2.5 text-sm">
@@ -94,7 +110,7 @@ export function GameCompleteScreen({ metrics, totalTimeSeconds, onReplay }: Game
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-3 text-center">
+    <div className="rounded-xl border border-border bg-card px-3 py-3 text-center shadow-sm">
       <p className="font-display text-lg font-extrabold text-foreground">{value}</p>
       <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
     </div>

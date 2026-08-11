@@ -1,4 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
+import { ShakeOnError } from '@/components/primitives/ShakeOnError';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { MatchingLevel } from '@/types/game';
@@ -16,6 +18,7 @@ export default function MatchingGamePlayer({
   level,
   onComplete,
 }: GamePlayerProps<MatchingLevel>) {
+  const sounds = useGameSounds();
   const leftItems = useMemo(() => shuffle(level.pairs), [level.pairs]);
   const rightItems = useMemo(() => shuffle(level.pairs), [level.pairs]);
 
@@ -23,6 +26,7 @@ export default function MatchingGamePlayer({
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [wrongPulse, setWrongPulse] = useState<{ left: string; right: string } | null>(null);
   const [wrongCount, setWrongCount] = useState(0);
+  const [wrongToken, setWrongToken] = useState(0);
   const [startedAt] = useState(() => Date.now());
   const completedRef = useRef(false);
 
@@ -36,6 +40,7 @@ export default function MatchingGamePlayer({
     if (!selectedLeft || matchedIds.has(pairId)) return;
 
     if (selectedLeft === pairId) {
+      sounds.playSuccessStep();
       const nextMatched = new Set(matchedIds);
       nextMatched.add(pairId);
       setMatchedIds(nextMatched);
@@ -56,6 +61,8 @@ export default function MatchingGamePlayer({
         });
       }
     } else {
+      sounds.playError();
+      setWrongToken((t) => t + 1);
       setWrongCount((c) => c + 1);
       setWrongPulse({ left: selectedLeft, right: pairId });
       setSelectedLeft(null);
@@ -69,7 +76,7 @@ export default function MatchingGamePlayer({
         <p className="mt-1 text-muted-foreground">{level.instructions}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <ShakeOnError trigger={wrongToken} className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           {leftItems.map((pair) => {
             const isMatched = matchedIds.has(pair.id);
@@ -114,7 +121,7 @@ export default function MatchingGamePlayer({
             );
           })}
         </div>
-      </div>
+      </ShakeOnError>
 
       <p className="text-center text-sm text-muted-foreground">
         {matchedIds.size}/{level.pairs.length} eşleşme tamamlandı

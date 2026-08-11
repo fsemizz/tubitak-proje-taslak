@@ -1,4 +1,4 @@
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, CornerDownLeft, Minus, Plus, X, Play, Trash2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Minus, Plus, X, Play, Trash2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { CommandEntry, CommandType } from '../types';
@@ -8,7 +8,7 @@ const ENTRY_ICON: Record<CommandType, typeof ArrowUp> = {
   down: ArrowDown,
   left: ArrowLeft,
   right: ArrowRight,
-  enter: CornerDownLeft,
+  enter: Sparkles,
 };
 
 const ENTRY_LABEL: Record<CommandType, string> = {
@@ -16,7 +16,7 @@ const ENTRY_LABEL: Record<CommandType, string> = {
   down: 'Aşağı',
   left: 'Sol',
   right: 'Sağ',
-  enter: 'ENTER',
+  enter: 'Eylemi yap',
 };
 
 interface CommandEditorProps {
@@ -28,6 +28,8 @@ interface CommandEditorProps {
   onRun: () => void;
   isRunning: boolean;
   activeEntryId?: string | null;
+  /** Label of the action the player would trigger right now, e.g. "Elini yüzünü yıka". Undefined when the next step is just moving. */
+  nextActionLabel?: string;
 }
 
 export function CommandEditor({
@@ -39,6 +41,7 @@ export function CommandEditor({
   onRun,
   isRunning,
   activeEntryId,
+  nextActionLabel,
 }: CommandEditorProps) {
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
@@ -52,14 +55,16 @@ export function CommandEditor({
           <DirButton icon={ArrowDown} onClick={() => onAddCommand('down')} disabled={isRunning} />
           <DirButton icon={ArrowRight} onClick={() => onAddCommand('right')} disabled={isRunning} />
         </div>
-        <Button
-          variant="outline"
-          className="mt-2 w-full"
-          onClick={() => onAddCommand('enter')}
-          disabled={isRunning}
-        >
-          <CornerDownLeft className="size-4" /> ENTER Ekle
-        </Button>
+        {nextActionLabel && (
+          <Button
+            variant="outline"
+            className="mt-2 w-full border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100"
+            onClick={() => onAddCommand('enter')}
+            disabled={isRunning}
+          >
+            <Sparkles className="size-4" /> {nextActionLabel}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -83,9 +88,9 @@ export function CommandEditor({
                   isActive ? 'border-teal-500 bg-teal-50' : 'border-border bg-background',
                 )}
               >
-                <Icon className="size-4 shrink-0 text-teal-600" />
+                <Icon className={cn('size-4 shrink-0', entry.type === 'enter' ? 'text-amber-500' : 'text-teal-600')} />
                 <span className="flex-1 font-medium text-foreground">
-                  {ENTRY_LABEL[entry.type]}
+                  {entry.type === 'enter' ? (entry.actionLabel ?? ENTRY_LABEL.enter) : ENTRY_LABEL[entry.type]}
                   {entry.type !== 'enter' && entry.count > 1 ? ` x${entry.count}` : ''}
                 </span>
                 {entry.type !== 'enter' && !isRunning && (

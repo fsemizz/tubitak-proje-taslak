@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Check, GitBranch, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ShakeOnError } from '@/components/primitives/ShakeOnError';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { ConditionalLevel } from '@/types/game';
@@ -9,9 +11,11 @@ export default function ConditionalLogicGamePlayer({
   level,
   onComplete,
 }: GamePlayerProps<ConditionalLevel>) {
+  const sounds = useGameSounds();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [status, setStatus] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [wrongToken, setWrongToken] = useState(0);
   const [startedAt] = useState(() => Date.now());
 
   function choose(branchId: string) {
@@ -33,6 +37,8 @@ export default function ConditionalLogicGamePlayer({
         timeSpentSeconds,
       });
     } else {
+      sounds.playError();
+      setWrongToken((t) => t + 1);
       setStatus('wrong');
     }
   }
@@ -53,7 +59,7 @@ export default function ConditionalLogicGamePlayer({
         </CardContent>
       </Card>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <ShakeOnError trigger={wrongToken} className="grid gap-3 sm:grid-cols-2">
         {level.branches.map((branch) => {
           const isSelected = selectedId === branch.id;
           const isCorrectReveal = status === 'correct' && branch.id === level.correctBranchId;
@@ -73,7 +79,7 @@ export default function ConditionalLogicGamePlayer({
             </button>
           );
         })}
-      </div>
+      </ShakeOnError>
 
       {status === 'wrong' && (
         <div className="flex items-center gap-2 rounded-lg bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">

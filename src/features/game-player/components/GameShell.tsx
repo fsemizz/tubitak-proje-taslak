@@ -7,6 +7,7 @@ import { gameRegistry } from '@/games/registry';
 import { useGameProgressStore } from '@/stores/useGameProgressStore';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { resultsService } from '@/services/serviceProvider';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { calculateStarRating, sumPoints, sumTime } from '@/lib/scoring';
 import { buildGameResultsPath, ROUTE_PATHS } from '@/app/routePaths';
 import type { GameDefinition, GameLevel } from '@/types/game';
@@ -20,6 +21,7 @@ interface GameShellProps {
 export function GameShell({ game, levels }: GameShellProps) {
   const navigate = useNavigate();
   const currentStudent = useSessionStore((s) => s.currentStudent);
+  const sounds = useGameSounds();
   const { activeGameId, activeLevelIndex, levelResults, startGame, recordLevelResult, goToNextLevel, finishGame, resetProgress } =
     useGameProgressStore();
 
@@ -56,11 +58,13 @@ export function GameShell({ game, levels }: GameShellProps) {
         starRating: calculateStarRating(totalPoints, maxPoints),
         totalTimeSeconds: sumTime(allResults),
       });
+      sounds.playGameComplete();
       resetProgress();
       navigate(buildGameResultsPath(game.id), { state: { summary } });
       return;
     }
 
+    sounds.playLevelComplete();
     setJustAdvanced(true);
     setTimeout(() => {
       goToNextLevel();

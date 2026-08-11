@@ -10,11 +10,17 @@ function placeObjects(grid: HouseMapCell[][], objects: InteractiveObject[]): voi
   }
 }
 
+function placeWalls(grid: HouseMapCell[][], cells: Position[]): void {
+  for (const c of cells) {
+    grid[c.row][c.col] = { type: 'wall' };
+  }
+}
+
 function pos(row: number, col: number): Position {
   return { row, col };
 }
 
-// --- Main house map: Çocuk Odası, Banyo, Mutfak ve Çıkış kapıları bir koridorla bağlı ---
+// --- Ana ev krokisi: 4 kapı bir koridor halkasıyla birbirine bağlı, ortadaki oda bloğundan geçilemez ---
 const mainObjects: InteractiveObject[] = [
   { id: 'door-child-room', label: 'Çocuk Odası', icon: 'bed', position: pos(0, 0) },
   { id: 'door-bathroom', label: 'Banyo', icon: 'shower-head', position: pos(0, 4) },
@@ -22,11 +28,19 @@ const mainObjects: InteractiveObject[] = [
   { id: 'door-exit', label: 'Çıkış Kapısı', icon: 'door-open', position: pos(4, 4) },
 ];
 const mainGrid = emptyGrid(5, 5);
+// Ortadaki 3x3 blok, evin dokunulamayan iç duvarlarını temsil eder. Yalnızca dış koridordan geçilebilir.
+placeWalls(mainGrid, [
+  pos(1, 1), pos(1, 2), pos(1, 3),
+  pos(2, 1), pos(2, 2), pos(2, 3),
+  pos(3, 1), pos(3, 2), pos(3, 3),
+]);
 placeObjects(mainGrid, mainObjects);
 
 export const mainHouseMap: HouseMap = {
   roomId: 'main',
   label: 'Ev Haritası',
+  variant: 'house',
+  accent: 'teal',
   grid: mainGrid,
   objects: mainObjects,
 };
@@ -44,6 +58,8 @@ placeObjects(bathroomGrid, bathroomObjects);
 export const bathroomMap: HouseMap = {
   roomId: 'bathroom',
   label: 'Banyo',
+  variant: 'room',
+  accent: 'sky',
   grid: bathroomGrid,
   objects: bathroomObjects,
 };
@@ -61,6 +77,8 @@ placeObjects(kitchenGrid, kitchenObjects);
 export const kitchenMap: HouseMap = {
   roomId: 'kitchen',
   label: 'Mutfak',
+  variant: 'room',
+  accent: 'amber',
   grid: kitchenGrid,
   objects: kitchenObjects,
 };
@@ -79,6 +97,8 @@ placeObjects(childRoomGrid, childRoomObjects);
 export const childRoomMap: HouseMap = {
   roomId: 'child-room',
   label: 'Çocuk Odası',
+  variant: 'room',
+  accent: 'violet',
   grid: childRoomGrid,
   objects: childRoomObjects,
 };

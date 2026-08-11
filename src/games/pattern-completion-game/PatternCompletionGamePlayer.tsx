@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { ShakeOnError } from '@/components/primitives/ShakeOnError';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { PatternCell, PatternLevel } from '@/types/game';
@@ -83,9 +85,11 @@ export default function PatternCompletionGamePlayer({
   level,
   onComplete,
 }: GamePlayerProps<PatternLevel>) {
+  const sounds = useGameSounds();
   const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<'idle' | 'wrong'>('idle');
   const [attempts, setAttempts] = useState(0);
+  const [wrongToken, setWrongToken] = useState(0);
   const [startedAt] = useState(() => Date.now());
 
   function choose(optionId: string) {
@@ -105,6 +109,8 @@ export default function PatternCompletionGamePlayer({
         timeSpentSeconds,
       });
     } else {
+      sounds.playError();
+      setWrongToken((t) => t + 1);
       setFeedback('wrong');
     }
   }
@@ -124,7 +130,7 @@ export default function PatternCompletionGamePlayer({
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap justify-center gap-4">
+      <ShakeOnError trigger={wrongToken} className="flex flex-wrap justify-center gap-4">
         {level.options.map((opt) => (
           <button
             key={opt.id}
@@ -139,7 +145,7 @@ export default function PatternCompletionGamePlayer({
             <PatternCellView cell={opt} size="sm" />
           </button>
         ))}
-      </div>
+      </ShakeOnError>
 
       {feedback === 'wrong' && (
         <div className="flex items-center justify-center gap-2 rounded-lg bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">

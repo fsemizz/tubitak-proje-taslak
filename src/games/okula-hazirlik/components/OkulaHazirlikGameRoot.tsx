@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb } from 'lucide-react';
+import { Bed, ChefHat, Home, Lightbulb, Rocket, ShowerHead, Sparkles, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { GameHUD } from '@/features/game-player/components/GameHUD';
 import { ExitConfirmDialog } from '@/features/game-player/components/ExitConfirmDialog';
 import { HouseMapCanvas } from './HouseMapCanvas';
@@ -12,6 +20,7 @@ import { houseNavLevels } from '../levels';
 import { houseMaps } from '../houseMaps';
 import { shortestPathLength } from '../pathfinding';
 import { accuracyTierFromAttempts, calculateLevelStars, computeHouseNavMetrics } from '../scoring';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { createId } from '@/lib/id';
 import { calculateStarRating } from '@/lib/scoring';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -28,6 +37,19 @@ const DIR_DELTA: Record<string, Position> = {
   right: { row: 0, col: 1 },
 };
 
+const ROOM_ICON: Record<string, typeof Bed> = {
+  'child-room': Bed,
+  bathroom: ShowerHead,
+  kitchen: ChefHat,
+};
+
+const DIR_LABEL_TR: Record<string, string> = {
+  up: 'yukarı',
+  down: 'aşağı',
+  left: 'sola',
+  right: 'sağa',
+};
+
 const STEP_DELAY_MS = 380;
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -42,7 +64,9 @@ type LevelPhase = 'playing' | 'levelComplete' | 'gameComplete';
 export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const navigate = useNavigate();
   const currentStudent = useSessionStore((s) => s.currentStudent);
+  const sounds = useGameSounds();
 
+  const [introOpen, setIntroOpen] = useState(true);
   const [levelIndex, setLevelIndex] = useState(0);
   const [phase, setPhase] = useState<LevelPhase>('playing');
   const [entries, setEntries] = useState<CommandEntry[]>([]);
@@ -53,10 +77,20 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const [attempts, setAttempts] = useState(0);
   const [taskProgress, setTaskProgress] = useState(0);
   const [hintUsed, setHintUsed] = useState(false);
+  const [hintMessage, setHintMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+  const [shakeToken, setShakeToken] = useState(0);
+  const [successToken, setSuccessToken] = useState(0);
   const [levelStartedAt, setLevelStartedAt] = useState(() => Date.now());
   const [gameStartedAt] = useState(() => Date.now());
+
+  // Tracks totals across every attempt made on the current level (not just the final, successful run).
+  const [cumulativeSteps, setCumulativeSteps] = useState(0);
+  const [cumulativeCommands, setCumulativeCommands] = useState(0);
+  const [cumulativeEnterErrors, setCumulativeEnterErrors] = useState(0);
+  const [cumulativeOrderErrors, setCumulativeOrderErrors] = useState(0);
+
   const [collectedMetrics, setCollectedMetrics] = useState<HouseNavLevelMetric[]>([]);
   const [lastLevelMetric, setLastLevelMetric] = useState<HouseNavLevelMetric | null>(null);
   const [finalSummary, setFinalSummary] = useState<{ metrics: ReturnType<typeof computeHouseNavMetrics> } | null>(
@@ -68,6 +102,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const map = houseMaps[level.mapRoomId];
   const nextTaskStep = level.taskSteps[taskProgress];
   const activeTargetObjectId = nextTaskStep?.targetObjectId;
+  const studentFirstName = currentStudent?.firstName?.trim() || 'Kahraman';
 
   function resetForLevel(index: number) {
     const lvl = houseNavLevels[index];
@@ -77,13 +112,20 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     setAttempts(0);
     setTaskProgress(0);
     setHintUsed(false);
+    setHintMessage(null);
     setErrorMessage(null);
     setFeedbackMessage(null);
+    setCumulativeSteps(0);
+    setCumulativeCommands(0);
+    setCumulativeEnterErrors(0);
+    setCumulativeOrderErrors(0);
     setLevelStartedAt(Date.now());
   }
 
   function addCommand(type: CommandType) {
-    setEntries((prev) => [...prev, { id: createId(), type, count: 1 }]);
+    const actionLabel = type === 'enter' ? nextTaskStep?.actionLabel : undefined;
+    setEntries((prev) => [...prev, { id: createId(), type, count: 1, actionLabel }]);
+    setHintMessage(null);
   }
 
   function changeCount(id: string, delta: number) {
@@ -102,9 +144,10 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
 
   function useHint() {
     const targetObject = map.objects.find((o) => o.id === activeTargetObjectId);
-    if (!targetObject) return;
+    if (!targetObject || !nextTaskStep) return;
+
     if (characterPosition.row === targetObject.position.row && characterPosition.col === targetObject.position.col) {
-      addCommand('enter');
+      setHintMessage(`İpucu: Tam doğru yerdesin! Şimdi "${nextTaskStep.actionLabel}" düğmesine bas.`);
     } else {
       const directions: CommandType[] = ['up', 'down', 'left', 'right'];
       let bestDir: CommandType | null = null;
@@ -120,8 +163,11 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
           bestDir = dir;
         }
       }
-      if (bestDir) addCommand(bestDir);
+      if (bestDir) {
+        setHintMessage(`İpucu: Bir adım ${DIR_LABEL_TR[bestDir]} gitmeyi dene, hedefe yaklaşacaksın!`);
+      }
     }
+    sounds.playHint();
     setHintUsed(true);
   }
 
@@ -130,6 +176,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     setIsRunning(true);
     setErrorMessage(null);
     setFeedbackMessage(null);
+    setHintMessage(null);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
 
@@ -162,6 +209,8 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
 
             if (isAtExpected) {
               setFeedbackMessage(expected.feedbackLabel);
+              sounds.playSuccessStep();
+              setSuccessToken((t) => t + 1);
               progress += 1;
               setTaskProgress(progress);
               if (progress >= level.taskSteps.length) {
@@ -195,12 +244,15 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         pos = next;
         stepsUsed += 1;
         setCharacterPosition(pos);
+        sounds.playStep();
 
         const expectedMove = level.taskSteps[progress];
         if (expectedMove?.kind === 'moveTo') {
           const obj = map.objects.find((o) => o.id === expectedMove.targetObjectId);
           if (obj && obj.position.row === pos.row && obj.position.col === pos.col) {
             setFeedbackMessage(expectedMove.feedbackLabel);
+            sounds.playSuccessStep();
+            setSuccessToken((t) => t + 1);
             progress += 1;
             setTaskProgress(progress);
             if (progress >= level.taskSteps.length) {
@@ -213,10 +265,24 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     }
 
     setActiveEntryId(null);
+    // Always start the next attempt with an empty queue: leaving old commands in place made a fresh
+    // command silently combine with the previous (already-tried) ones on the next run.
+    setEntries([]);
 
     if (!succeeded && !failed) {
       failed = 'incomplete';
     }
+
+    // Roll this attempt's totals into the level's running totals, whether it succeeded or not,
+    // so scoring reflects the whole journey through the level, not just the final winning run.
+    const totalSteps = cumulativeSteps + stepsUsed;
+    const totalCommands = cumulativeCommands + entries.length;
+    const totalEnterErrors = cumulativeEnterErrors + enterErrors;
+    const totalOrderErrors = cumulativeOrderErrors + orderErrors;
+    setCumulativeSteps(totalSteps);
+    setCumulativeCommands(totalCommands);
+    setCumulativeEnterErrors(totalEnterErrors);
+    setCumulativeOrderErrors(totalOrderErrors);
 
     if (succeeded) {
       const waypoints: Position[] = [level.startPosition, ...level.taskSteps.map((t) => {
@@ -227,7 +293,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
       for (let i = 0; i < waypoints.length - 1; i++) {
         shortest += shortestPathLength(map, waypoints[i], waypoints[i + 1]);
       }
-      const pathEfficiencyPct = stepsUsed > 0 ? Math.min(100, (shortest / stepsUsed) * 100) : 100;
+      const pathEfficiencyPct = totalSteps > 0 ? Math.min(100, (shortest / totalSteps) * 100) : 100;
       const accuracyTier = accuracyTierFromAttempts(newAttempts);
       const starRating = calculateLevelStars(accuracyTier, pathEfficiencyPct, hintUsed);
 
@@ -237,12 +303,12 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         starRating,
         accuracyTier,
         pathEfficiencyPct,
-        stepsUsed,
+        stepsUsed: totalSteps,
         shortestPathLength: shortest,
-        unnecessarySteps: Math.max(0, stepsUsed - shortest),
-        commandEntriesUsed: entries.length,
-        enterErrors,
-        orderErrors,
+        unnecessarySteps: Math.max(0, totalSteps - shortest),
+        commandEntriesUsed: totalCommands,
+        enterErrors: totalEnterErrors,
+        orderErrors: totalOrderErrors,
         attempts: newAttempts,
         hintUsed,
         planningSuccess: newAttempts === 1,
@@ -258,11 +324,15 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
 
     const messages: Record<string, string> = {
       wall: 'Bu yönde duvar var ya da sınırın dışına çıktın. Komutlarını düzenleyip tekrar dene.',
-      wrongEnter: 'Burada yapılacak bir görev yok. Doğru yere gidip tekrar ENTER dene.',
+      wrongEnter: 'Burada yapılacak bir görev yok. Doğru yere gidip tekrar dene.',
       orderBroken: 'Sırayı bozdun! Görevleri doğru sırayla yapmalısın.',
       incomplete: 'Komutların bitti ama görev tamamlanmadı. Daha fazla komut ekle.',
     };
     setErrorMessage(messages[failed ?? 'incomplete']);
+    sounds.playError();
+    if (failed === 'wall') {
+      setShakeToken((t) => t + 1);
+    }
     setIsRunning(false);
   }
 
@@ -324,7 +394,15 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
 
   if (phase === 'gameComplete' && finalSummary) {
     const totalTimeSeconds = finalSummary.metrics.levels.reduce((s, l) => s + l.timeSpentSeconds, 0);
-    return <GameCompleteScreen metrics={finalSummary.metrics} totalTimeSeconds={totalTimeSeconds} onReplay={handleReplay} />;
+    return (
+      <GameCompleteScreen
+        metrics={finalSummary.metrics}
+        totalTimeSeconds={totalTimeSeconds}
+        studentFirstName={studentFirstName}
+        onReplay={handleReplay}
+        onPlayGameComplete={sounds.playGameComplete}
+      />
+    );
   }
 
   if (phase === 'levelComplete' && lastLevelMetric) {
@@ -333,6 +411,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         metric={lastLevelMetric}
         isLastLevel={levelIndex + 1 >= houseNavLevels.length}
         onNext={handleLevelNext}
+        onPlayLevelComplete={sounds.playLevelComplete}
       />
     );
   }
@@ -351,20 +430,49 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         <p className="mt-1 text-muted-foreground">{level.instructions}</p>
       </div>
 
+      {nextTaskStep && (
+        <div className="flex items-center gap-2.5 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-teal-800">
+          <Target className="size-5 shrink-0 text-teal-600" />
+          <p className="text-sm font-bold">Şimdi yapman gereken: {nextTaskStep.actionLabel}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-1.5 self-start rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground shadow-sm">
+            {map.variant === 'house' ? (
+              <>
+                <Home className="size-3.5 text-teal-600" /> Ev Krokisi Görünümü
+              </>
+            ) : (
+              <>
+                {(() => {
+                  const RoomIcon = ROOM_ICON[map.roomId] ?? Home;
+                  return <RoomIcon className="size-3.5 text-teal-600" />;
+                })()}{' '}
+                {map.label} İçindesin
+              </>
+            )}
+          </div>
           <HouseMapCanvas
             map={map}
             characterPosition={characterPosition}
             characterDirection={characterDirection}
             activeTargetObjectId={activeTargetObjectId}
+            shakeToken={shakeToken}
+            successToken={successToken}
           />
           <Button variant="outline" size="sm" onClick={useHint} disabled={isRunning || !nextTaskStep} className="self-start">
             <Lightbulb className="size-4" /> İpucu Al
           </Button>
+          {hintMessage && (
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-700">
+              <Lightbulb className="size-4 shrink-0" /> {hintMessage}
+            </div>
+          )}
           {feedbackMessage && (
-            <div className="rounded-lg bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">
-              {feedbackMessage}
+            <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700">
+              <Sparkles className="size-4 shrink-0" /> {feedbackMessage}
             </div>
           )}
           {errorMessage && (
@@ -381,10 +489,35 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
           onRun={runCommands}
           isRunning={isRunning}
           activeEntryId={activeEntryId}
+          nextActionLabel={nextTaskStep?.kind === 'enterAt' ? nextTaskStep.actionLabel : undefined}
         />
       </div>
 
       <ExitConfirmDialog open={exitDialogOpen} onOpenChange={setExitDialogOpen} onConfirm={handleExitConfirm} />
+
+      <Dialog open={introOpen} onOpenChange={setIntroOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg">
+              <Rocket className="size-7" />
+            </div>
+            <DialogTitle className="text-center font-display text-xl font-extrabold text-foreground">
+              Merhaba, {studentFirstName}! 🌟
+            </DialogTitle>
+            <DialogDescription className="text-center text-sm leading-relaxed text-muted-foreground">
+              Bugün seninle birlikte okula hazırlanacağız! Evinde küçük görevlerin var: elini yüzünü yıka, kahvaltını
+              yap, çantanı hazırla ve kapıdan çık. Her bölümde oklarla kahramanı yönlendireceksin ve bir görevi
+              tamamlayacaksın. Takılırsan "İpucu Al" düğmesine basabilirsin. Hazırsan başlayalım {studentFirstName},
+              sen yaparsın! 💪
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button size="lg" className="w-full" onClick={() => setIntroOpen(false)}>
+              <Rocket className="size-4" /> Hadi Başlayalım!
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
