@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Star, ArrowRight, Lightbulb, Footprints, Route, ListChecks, RotateCw, Timer } from 'lucide-react';
+import { Star, ArrowRight, Lightbulb, Footprints, Route, ListChecks, RotateCw, Timer, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
@@ -31,8 +31,10 @@ export function LevelCompleteScreen({ metric, isLastLevel, onNext, onPlayLevelCo
     { label: 'En Kısa Yol', value: `${metric.shortestPathLength} adım`, icon: Route },
     { label: 'Senin Toplam Yolun', value: `${metric.stepsUsed} adım`, icon: Footprints },
     { label: 'Yol Verimliliği', value: `%${Math.round(metric.pathEfficiencyPct)}`, icon: RotateCw },
+    { label: 'Planlama Verimliliği', value: `%${Math.round(metric.planningEfficiencyPct)}`, icon: Layers },
     { label: 'Kullanılan Komut', value: `${metric.commandEntriesUsed}`, icon: ListChecks },
     { label: 'Gereksiz Adım', value: `${metric.unnecessarySteps}`, icon: Footprints },
+    { label: 'Çalıştırma Sayısı', value: `${metric.totalRunsUsed}`, icon: Timer },
     { label: 'Deneme Sayısı', value: `${metric.attempts}`, icon: Timer },
     { label: 'İpucu', value: metric.hintUsed ? 'Kullandı' : 'Kullanmadı', icon: Lightbulb },
   ];

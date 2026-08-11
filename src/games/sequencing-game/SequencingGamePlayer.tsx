@@ -29,6 +29,7 @@ export default function SequencingGamePlayer({
   const [feedback, setFeedback] = useState<'idle' | 'wrong'>('idle');
   const [wrongToken, setWrongToken] = useState(0);
   const [hintedItemId, setHintedItemId] = useState<string | null>(null);
+  const [hintUsed, setHintUsed] = useState(false);
   const [startedAt] = useState(() => Date.now());
 
   const isComplete = placed.length === level.items.length;
@@ -61,6 +62,7 @@ export default function SequencingGamePlayer({
     const nextCorrectId = level.correctOrder[placed.length];
     if (!nextCorrectId || !pool.some((i) => i.id === nextCorrectId)) return;
     sounds.playHint();
+    setHintUsed(true);
     setHintedItemId(nextCorrectId);
     setTimeout(() => setHintedItemId((cur) => (cur === nextCorrectId ? null : cur)), 2500);
   }
@@ -73,7 +75,7 @@ export default function SequencingGamePlayer({
 
     if (isCorrect) {
       const timeSpentSeconds = Math.round((Date.now() - startedAt) / 1000);
-      const pointsEarned = newAttempts === 1 ? level.points : Math.round(level.points * 0.6);
+      const pointsEarned = newAttempts === 1 && !hintUsed ? level.points : Math.round(level.points * 0.6);
       onComplete({
         levelId: level.id,
         levelOrder: level.order,
@@ -81,6 +83,7 @@ export default function SequencingGamePlayer({
         attempts: newAttempts,
         pointsEarned,
         timeSpentSeconds,
+        hintUsed,
       });
     } else {
       sounds.playError();

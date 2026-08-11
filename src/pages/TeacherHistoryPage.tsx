@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useNavigation, useRevalidator } from 'react-router-dom';
 import { ResultsTable } from '@/features/teacher/components/ResultsTable';
 import { SectionHeading } from '@/components/primitives/SectionHeading';
 import { EmptyState } from '@/components/primitives/EmptyState';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { requireTeacherLoader } from '@/app/routeGuards';
 import { resultsService, gameContentService } from '@/services/serviceProvider';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, RefreshCw } from 'lucide-react';
 import type { GameCompletionSummary } from '@/types/result';
 import type { GameDefinition } from '@/types/game';
 
@@ -28,6 +29,9 @@ export async function teacherHistoryLoader() {
 export default function TeacherHistoryPage() {
   const { results, games } = useLoaderData() as { results: GameCompletionSummary[]; games: GameDefinition[] };
   const [gameFilter, setGameFilter] = useState('all');
+  const revalidator = useRevalidator();
+  const navigation = useNavigation();
+  const isLoading = navigation.state === 'loading' || revalidator.state === 'loading';
 
   const filtered = useMemo(
     () => (gameFilter === 'all' ? results : results.filter((r) => r.gameId === gameFilter)),
@@ -40,19 +44,24 @@ export default function TeacherHistoryPage() {
         title="Oyun Geçmişi"
         description="Tüm öğrencilerin tamamladığı oyunlar."
         action={
-          <Select value={gameFilter} onValueChange={(value) => setGameFilter(value ?? 'all')}>
-            <SelectTrigger>
-              <SelectValue placeholder="Oyun seç" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tüm oyunlar</SelectItem>
-              {games.map((g) => (
-                <SelectItem key={g.id} value={g.id}>
-                  {g.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Select value={gameFilter} onValueChange={(value) => setGameFilter(value ?? 'all')}>
+              <SelectTrigger>
+                <SelectValue placeholder="Oyun seç" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm oyunlar</SelectItem>
+                {games.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={() => revalidator.revalidate()}>
+              <RefreshCw className={isLoading ? 'size-4 animate-spin' : 'size-4'} /> Yenile
+            </Button>
+          </div>
         }
       />
 

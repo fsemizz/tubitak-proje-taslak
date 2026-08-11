@@ -5,6 +5,7 @@ export interface LevelAttemptResult {
   attempts: number;
   pointsEarned: number;
   timeSpentSeconds: number;
+  hintUsed?: boolean;
 }
 
 export type LevelAttemptResultInput = LevelAttemptResult;
@@ -24,6 +25,10 @@ export interface HouseNavLevelMetric {
   attempts: number;
   hintUsed: boolean;
   planningSuccess: boolean;
+  /** How many separate "Çalıştır" runs it took to finish the level (fewer, bigger batches = better planning). */
+  totalRunsUsed: number;
+  /** taskSteps.length / totalRunsUsed, capped at 100 - rewards planning a whole step in one batch over trial-and-error single moves. */
+  planningEfficiencyPct: number;
   timeSpentSeconds: number;
 }
 

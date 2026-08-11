@@ -10,9 +10,12 @@ export function calculateLevelStars(
   accuracyTier: 1 | 2 | 3,
   pathEfficiencyPct: number,
   hintUsed: boolean,
+  planningEfficiencyPct: number,
 ): 1 | 2 | 3 {
   let stars: 1 | 2 | 3;
-  if (accuracyTier === 1 && pathEfficiencyPct >= 90) {
+  // Top marks require efficient planning too: batching a whole step into one run beats trial-and-error
+  // single moves that happen to add up to the same step count.
+  if (accuracyTier === 1 && pathEfficiencyPct >= 90 && planningEfficiencyPct >= 50) {
     stars = 3;
   } else if (accuracyTier <= 2 && pathEfficiencyPct >= 70) {
     stars = 2;
@@ -56,7 +59,7 @@ export function computeHouseNavMetrics(
       return sum + tierScore;
     }, 0) / n,
   );
-  const planlamaPct = Math.round((levelMetrics.filter((l) => l.planningSuccess).length / n) * 100);
+  const planlamaPct = Math.round(levelMetrics.reduce((sum, l) => sum + l.planningEfficiencyPct, 0) / n);
   const yonBulmaPct = Math.round(avgPathEfficiency);
   const problemCozmePct = Math.round(
     levelMetrics.reduce((sum, l) => {

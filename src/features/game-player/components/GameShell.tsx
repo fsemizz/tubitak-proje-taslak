@@ -2,13 +2,13 @@ import { Suspense, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GameHUD } from './GameHUD';
 import { ExitConfirmDialog } from './ExitConfirmDialog';
-import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { LevelCompleteInterstitial } from './LevelCompleteInterstitial';
 import { gameRegistry } from '@/games/registry';
 import { useGameProgressStore } from '@/stores/useGameProgressStore';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { resultsService } from '@/services/serviceProvider';
 import { useGameSounds } from '@/hooks/useGameSounds';
-import { calculateStarRating, sumPoints, sumTime } from '@/lib/scoring';
+import { calculateSimpleLevelStars, calculateStarRating, sumPoints, sumTime } from '@/lib/scoring';
 import { buildGameResultsPath, ROUTE_PATHS } from '@/app/routePaths';
 import type { GameDefinition, GameLevel } from '@/types/game';
 import type { LevelAttemptResultInput } from '@/types/result';
@@ -26,7 +26,7 @@ export function GameShell({ game, levels }: GameShellProps) {
     useGameProgressStore();
 
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
-  const [justAdvanced, setJustAdvanced] = useState(false);
+  const [pendingResult, setPendingResult] = useState<LevelAttemptResultInput | null>(null);
 
   useEffect(() => {
     if (activeGameId !== game.id) {
@@ -37,26 +37,32 @@ export function GameShell({ game, levels }: GameShellProps) {
 
   const PlayerComponent = gameRegistry[game.id]?.PlayerComponent;
   const currentLevel = levels[activeLevelIndex];
+  const isLastLevel = activeLevelIndex + 1 >= levels.length;
 
-  async function handleComplete(result: LevelAttemptResultInput) {
+  function handleComplete(result: LevelAttemptResultInput) {
     recordLevelResult(result);
-    const allResults = [...levelResults, result];
-    const isLastLevel = activeLevelIndex + 1 >= levels.length;
+    sounds.playLevelComplete();
+    setPendingResult(result);
+  }
+
+  async function handleContinue() {
+    if (!pendingResult) return;
+    setPendingResult(null);
 
     if (isLastLevel && currentStudent) {
       finishGame();
-      const totalPoints = sumPoints(allResults);
+      const totalPoints = sumPoints(levelResults);
       const maxPoints = levels.reduce((sum, l) => sum + l.points, 0);
       const summary = await resultsService.submitGameCompletion({
         studentId: currentStudent.id,
         studentName: `${currentStudent.firstName} ${currentStudent.lastName}`,
         gameId: game.id,
         gameTitle: game.title,
-        levelResults: allResults,
+        levelResults,
         totalPoints,
         maxPoints,
         starRating: calculateStarRating(totalPoints, maxPoints),
-        totalTimeSeconds: sumTime(allResults),
+        totalTimeSeconds: sumTime(levelResults),
       });
       sounds.playGameComplete();
       resetProgress();
@@ -64,12 +70,7 @@ export function GameShell({ game, levels }: GameShellProps) {
       return;
     }
 
-    sounds.playLevelComplete();
-    setJustAdvanced(true);
-    setTimeout(() => {
-      goToNextLevel();
-      setJustAdvanced(false);
-    }, 900);
+    goToNextLevel();
   }
 
   function handleExitConfirm() {
@@ -89,11 +90,16 @@ export function GameShell({ game, levels }: GameShellProps) {
         onRequestExit={() => setExitDialogOpen(true)}
       />
 
-      {justAdvanced ? (
-        <div className="flex flex-col items-center gap-4 py-16">
-          <CelebrationBurst />
-          <p className="font-display text-lg font-bold text-foreground">Harika! Sıradaki seviyeye geçiyorsun...</p>
-        </div>
+      {pendingResult ? (
+        <LevelCompleteInterstitial
+          levelTitle={currentLevel.title}
+          starRating={calculateSimpleLevelStars(pendingResult.attempts, pendingResult.hintUsed)}
+          pointsEarned={pendingResult.pointsEarned}
+          attempts={pendingResult.attempts}
+          hintUsed={pendingResult.hintUsed}
+          isLastLevel={isLastLevel}
+          onNext={handleContinue}
+        />
       ) : (
         <Suspense fallback={<div className="py-16 text-center text-muted-foreground">Yükleniyor…</div>}>
           <PlayerComponent

@@ -1,5 +1,6 @@
-import { useLoaderData, type LoaderFunctionArgs } from 'react-router-dom';
-import { Trophy, Star, Clock3, Gamepad2 } from 'lucide-react';
+import { useLoaderData, useNavigation, useRevalidator, type LoaderFunctionArgs } from 'react-router-dom';
+import { Trophy, Star, Clock3, Gamepad2, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { StatTile } from '@/components/primitives/StatTile';
 import { StudentScoreChart } from '@/features/teacher/components/StudentScoreChart';
 import { ResultsTable } from '@/features/teacher/components/ResultsTable';
@@ -33,12 +34,20 @@ export default function TeacherStudentDetailPage() {
     results: GameCompletionSummary[];
     stats: StudentStats;
   };
+  const revalidator = useRevalidator();
+  const navigation = useNavigation();
+  const isLoading = navigation.state === 'loading' || revalidator.state === 'loading';
 
   return (
     <div className="flex flex-col gap-8">
       <SectionHeading
         title={`${student.firstName} ${student.lastName}`}
         description={student.grade !== undefined ? `${student.grade}. sınıf` : undefined}
+        action={
+          <Button variant="outline" onClick={() => revalidator.revalidate()}>
+            <RefreshCw className={isLoading ? 'size-4 animate-spin' : 'size-4'} /> Verileri Yenile
+          </Button>
+        }
       />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

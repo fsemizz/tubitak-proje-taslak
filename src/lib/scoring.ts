@@ -1,5 +1,12 @@
 import type { LevelAttemptResult } from '@/types/result';
 
+/** Per-level star rating for the simple quiz-style games: fewer attempts and no hint use earns more stars. */
+export function calculateSimpleLevelStars(attempts: number, hintUsed?: boolean): 1 | 2 | 3 {
+  let stars: 1 | 2 | 3 = attempts <= 1 ? 3 : attempts === 2 ? 2 : 1;
+  if (hintUsed) stars = Math.max(1, stars - 1) as 1 | 2 | 3;
+  return stars;
+}
+
 export function calculateStarRating(totalPoints: number, maxPoints: number): 1 | 2 | 3 {
   if (maxPoints <= 0) return 1;
   const ratio = totalPoints / maxPoints;

@@ -90,6 +90,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const [cumulativeCommands, setCumulativeCommands] = useState(0);
   const [cumulativeEnterErrors, setCumulativeEnterErrors] = useState(0);
   const [cumulativeOrderErrors, setCumulativeOrderErrors] = useState(0);
+  const [totalRunsUsed, setTotalRunsUsed] = useState(0);
 
   const [collectedMetrics, setCollectedMetrics] = useState<HouseNavLevelMetric[]>([]);
   const [lastLevelMetric, setLastLevelMetric] = useState<HouseNavLevelMetric | null>(null);
@@ -119,6 +120,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     setCumulativeCommands(0);
     setCumulativeEnterErrors(0);
     setCumulativeOrderErrors(0);
+    setTotalRunsUsed(0);
     setLevelStartedAt(Date.now());
   }
 
@@ -177,8 +179,6 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     setErrorMessage(null);
     setFeedbackMessage(null);
     setHintMessage(null);
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
 
     let pos = { ...characterPosition };
     let dir = characterDirection;
@@ -186,7 +186,10 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     let enterErrors = 0;
     let orderErrors = 0;
     let progress = taskProgress;
-    let failed: 'wall' | 'wrongEnter' | 'orderBroken' | 'incomplete' | null = null;
+    // Only a genuine mistake (walked into a wall, pressed the action in the wrong place, or broke the
+    // required order) counts as a failed attempt. Simply running out of queued commands mid-task does
+    // not - everything done so far was correct, the player just needs to queue more.
+    let failed: 'wall' | 'wrongEnter' | 'orderBroken' | null = null;
     let succeeded = false;
 
     outer: for (const entry of entries) {
@@ -269,22 +272,23 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     // command silently combine with the previous (already-tried) ones on the next run.
     setEntries([]);
 
-    if (!succeeded && !failed) {
-      failed = 'incomplete';
-    }
-
-    // Roll this attempt's totals into the level's running totals, whether it succeeded or not,
-    // so scoring reflects the whole journey through the level, not just the final winning run.
+    // Roll this run's totals into the level's running totals regardless of outcome - steps and
+    // commands used are real progress either way, not just on the final winning run.
     const totalSteps = cumulativeSteps + stepsUsed;
     const totalCommands = cumulativeCommands + entries.length;
     const totalEnterErrors = cumulativeEnterErrors + enterErrors;
     const totalOrderErrors = cumulativeOrderErrors + orderErrors;
+    const totalRuns = totalRunsUsed + 1;
     setCumulativeSteps(totalSteps);
     setCumulativeCommands(totalCommands);
     setCumulativeEnterErrors(totalEnterErrors);
     setCumulativeOrderErrors(totalOrderErrors);
+    setTotalRunsUsed(totalRuns);
 
     if (succeeded) {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+
       const waypoints: Position[] = [level.startPosition, ...level.taskSteps.map((t) => {
         const obj = map.objects.find((o) => o.id === t.targetObjectId)!;
         return obj.position;
@@ -294,8 +298,10 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         shortest += shortestPathLength(map, waypoints[i], waypoints[i + 1]);
       }
       const pathEfficiencyPct = totalSteps > 0 ? Math.min(100, (shortest / totalSteps) * 100) : 100;
+      // Rewards batching a whole step into one run over splitting it into many trial-and-error single moves.
+      const planningEfficiencyPct = Math.min(100, (level.taskSteps.length / totalRuns) * 100);
       const accuracyTier = accuracyTierFromAttempts(newAttempts);
-      const starRating = calculateLevelStars(accuracyTier, pathEfficiencyPct, hintUsed);
+      const starRating = calculateLevelStars(accuracyTier, pathEfficiencyPct, hintUsed, planningEfficiencyPct);
 
       const metric: HouseNavLevelMetric = {
         levelId: level.id,
@@ -312,6 +318,8 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         attempts: newAttempts,
         hintUsed,
         planningSuccess: newAttempts === 1,
+        totalRunsUsed: totalRuns,
+        planningEfficiencyPct,
         timeSpentSeconds: Math.round((Date.now() - levelStartedAt) / 1000),
       };
 
@@ -322,17 +330,24 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
       return;
     }
 
-    const messages: Record<string, string> = {
-      wall: 'Bu yönde duvar var ya da sınırın dışına çıktın. Komutlarını düzenleyip tekrar dene.',
-      wrongEnter: 'Burada yapılacak bir görev yok. Doğru yere gidip tekrar dene.',
-      orderBroken: 'Sırayı bozdun! Görevleri doğru sırayla yapmalısın.',
-      incomplete: 'Komutların bitti ama görev tamamlanmadı. Daha fazla komut ekle.',
-    };
-    setErrorMessage(messages[failed ?? 'incomplete']);
-    sounds.playError();
-    if (failed === 'wall') {
-      setShakeToken((t) => t + 1);
+    if (failed) {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      const messages: Record<'wall' | 'wrongEnter' | 'orderBroken', string> = {
+        wall: 'Bu yönde duvar var ya da sınırın dışına çıktın. Komutlarını düzenleyip tekrar dene.',
+        wrongEnter: 'Burada yapılacak bir görev yok. Doğru yere gidip tekrar dene.',
+        orderBroken: 'Sırayı bozdun! Görevleri doğru sırayla yapmalısın.',
+      };
+      setErrorMessage(messages[failed]);
+      sounds.playError();
+      if (failed === 'wall') {
+        setShakeToken((t) => t + 1);
+      }
     }
+    // Otherwise: the queue simply ran out before finishing every step, but nothing done was wrong -
+    // no error sound/banner, no attempt penalty. The success feedback from the completed steps (if
+    // any) stays on screen, and the "Şimdi yapman gereken" banner already points to what's next.
+
     setIsRunning(false);
   }
 
