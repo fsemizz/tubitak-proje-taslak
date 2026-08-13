@@ -10,6 +10,9 @@ import {
   LampDesk,
   Book,
   Backpack,
+  Shirt,
+  Apple,
+  Box,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -25,6 +28,9 @@ export const OBJECT_ICON_MAP: Record<string, LucideIcon> = {
   'lamp-desk': LampDesk,
   book: Book,
   backpack: Backpack,
+  shirt: Shirt,
+  apple: Apple,
+  box: Box,
 };
 
 export function getObjectIcon(key: string): LucideIcon {

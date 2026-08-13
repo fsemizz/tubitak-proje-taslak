@@ -127,22 +127,36 @@ export function HouseMapCanvas({
         <motion.div
           className="pointer-events-none absolute z-10 flex items-center justify-center"
           style={{ width: CELL_SIZE, height: CELL_SIZE }}
-          animate={{ left: characterPosition.col * CELL_SIZE, top: characterPosition.row * CELL_SIZE }}
-          transition={{ type: 'tween', duration: 0.32, ease: 'easeInOut' }}
+          animate={{
+            left: characterPosition.col * CELL_SIZE,
+            top: characterPosition.row * CELL_SIZE,
+            y: [0, -9, 0],
+          }}
+          transition={{
+            left: { type: 'tween', duration: 0.32, ease: 'easeInOut' },
+            top: { type: 'tween', duration: 0.32, ease: 'easeInOut' },
+            y: { duration: 0.32, ease: 'easeOut' },
+          }}
         >
           <div className="relative flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg ring-4 ring-white">
             <Bot className="size-6 transition-transform" style={{ transform: `rotate(${DIR_ROTATE[characterDirection] ?? 0}deg)` }} />
-            {flash === 'success' && (
-              <motion.span
-                key={`sparkle-${successToken}`}
-                initial={{ scale: 0.3, opacity: 0 }}
-                animate={{ scale: 1.6, opacity: [0, 1, 0] }}
-                transition={{ duration: 0.5 }}
-                className="absolute -right-2 -top-2 text-amber-400"
-              >
-                <Sparkles className="size-5 fill-amber-300" />
-              </motion.span>
-            )}
+            {flash === 'success' &&
+              [0, 1, 2].map((i) => (
+                <motion.span
+                  key={`sparkle-${successToken}-${i}`}
+                  initial={{ scale: 0.2, opacity: 0, x: 0, y: 0 }}
+                  animate={{
+                    scale: [0.2, 1.3, 0.9],
+                    opacity: [0, 1, 0],
+                    x: [0, (i - 1) * 16],
+                    y: [0, -14 - i * 4],
+                  }}
+                  transition={{ duration: 0.6, delay: i * 0.06 }}
+                  className="absolute -top-1 text-amber-400"
+                >
+                  <Sparkles className="size-4 fill-amber-300" />
+                </motion.span>
+              ))}
           </div>
         </motion.div>
       </motion.div>

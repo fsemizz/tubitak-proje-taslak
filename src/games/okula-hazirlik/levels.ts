@@ -1,6 +1,6 @@
 import type { HouseNavLevel } from './types';
 
-export const houseNavLevels: HouseNavLevel[] = [
+export const anaokuluLevels: HouseNavLevel[] = [
   {
     id: 'okul-1',
     order: 1,

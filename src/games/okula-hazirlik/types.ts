@@ -30,7 +30,14 @@ export interface HouseMap {
   objects: InteractiveObject[];
 }
 
-export type TaskStepKind = 'moveTo' | 'enterAt';
+export type TaskStepKind = 'moveTo' | 'enterAt' | 'miniPuzzle';
+
+/** A small, self-contained logic puzzle shown full-screen for a 'miniPuzzle' task step. */
+export type PuzzleSpec =
+  | { type: 'sequence'; prompt: string; sequence: string[]; options: string[]; correctAnswer: string }
+  | { type: 'orderedChoice'; prompt: string; items: { id: string; label: string; icon: string }[]; correctOrder: string[] }
+  | { type: 'clue'; prompt: string; options: { id: string; label: string; icon: string }[]; correctOptionId: string }
+  | { type: 'matching'; prompt: string; pairs: { id: string; leftLabel: string; rightLabel: string }[] };
 
 export interface TaskStep {
   kind: TaskStepKind;
@@ -39,7 +46,11 @@ export interface TaskStep {
   actionLabel: string;
   /** Shown as a success toast once this step is completed, e.g. "Elini yüzünü yıkadın!". */
   feedbackLabel: string;
+  /** Required for kind: 'miniPuzzle' - which logic puzzle to show and its data. */
+  puzzle?: PuzzleSpec;
 }
+
+export type SchoolReadinessLevel = 'anaokulu' | 'ilkokul';
 
 export interface HouseNavLevel {
   id: string;

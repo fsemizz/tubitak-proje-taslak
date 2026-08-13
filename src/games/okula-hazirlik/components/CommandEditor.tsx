@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Minus, Plus, X, Play, Trash2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -145,12 +146,13 @@ function DirButton({
   disabled?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
       disabled={disabled}
+      whileTap={{ scale: 0.92 }}
       className="tap-target flex h-11 items-center justify-center rounded-lg border border-border bg-background text-teal-700 shadow-sm transition hover:border-teal-400 hover:bg-teal-50 disabled:opacity-40"
     >
       <Icon className="size-5" />
-    </button>
+    </motion.button>
   );
 }
