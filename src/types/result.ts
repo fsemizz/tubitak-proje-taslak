@@ -40,6 +40,9 @@ export interface HouseNavMetrics {
   yonBulmaPct: number;
   problemCozmePct: number;
   gorevTamamlamaPct: number;
+  /** Which Okula Hazırlık track was played - kept as a plain string union so this shared results
+   * type doesn't need to depend on the game's own type module. */
+  schoolLevel?: 'anaokulu' | 'ilkokul';
 }
 
 export interface GameCompletionSummary {

@@ -21,7 +21,8 @@ import { LevelCompleteScreen } from './LevelCompleteScreen';
 import { GameCompleteScreen } from './GameCompleteScreen';
 import { anaokuluLevels } from '../levels';
 import { ilkokuluLevels } from '../levels7x7';
-import { houseMaps, houseMaps7x7 } from '../houseMaps';
+import { generateHouseMaps } from '../mapGenerator';
+import { generatePuzzle } from '../puzzleGenerator';
 import { shortestPathLength } from '../pathfinding';
 import { accuracyTierFromAttempts, calculateLevelStars, computeHouseNavMetrics } from '../scoring';
 import { useGameSounds } from '@/hooks/useGameSounds';
@@ -32,7 +33,7 @@ import { resultsService } from '@/services/serviceProvider';
 import { ROUTE_PATHS } from '@/app/routePaths';
 import type { GameDefinition } from '@/types/game';
 import type { GameCompletionSummary, HouseNavLevelMetric, LevelAttemptResult } from '@/types/result';
-import type { CommandEntry, CommandType, HouseNavLevel, Position, SchoolReadinessLevel } from '../types';
+import type { CommandEntry, CommandType, HouseMap, HouseNavLevel, Position, PuzzleSpec, SchoolReadinessLevel } from '../types';
 
 const DIR_DELTA: Record<string, Position> = {
   up: { row: -1, col: 0 },
@@ -78,7 +79,12 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [phase, setPhase] = useState<LevelPhase>('selectingLevel');
   const [entries, setEntries] = useState<CommandEntry[]>([]);
-  const [characterPosition, setCharacterPosition] = useState<Position>(anaokuluLevels[0].startPosition);
+  // Maps are regenerated fresh every time a level starts (see resetForLevel) - stable during that
+  // level's retries, different the next time you enter it. levelStartPosition is resolved from
+  // whichever fresh map is currently active, since startAtObjectId only makes sense against it.
+  const [currentMaps, setCurrentMaps] = useState<Record<string, HouseMap>>(() => generateHouseMaps('anaokulu'));
+  const [levelStartPosition, setLevelStartPosition] = useState<Position>({ row: 0, col: 0 });
+  const [characterPosition, setCharacterPosition] = useState<Position>({ row: 0, col: 0 });
   const [characterDirection, setCharacterDirection] = useState('right');
   const [isRunning, setIsRunning] = useState(false);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
@@ -101,6 +107,9 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const [totalRunsUsed, setTotalRunsUsed] = useState(0);
   const [collectedItems, setCollectedItems] = useState<string[]>([]);
   const [puzzleOpen, setPuzzleOpen] = useState(false);
+  // Concrete puzzle content for this level's miniPuzzle steps, generated fresh alongside the maps in
+  // resetForLevel (keyed by taskStep index) - stable across retries, different next time in.
+  const [currentPuzzleSpecs, setCurrentPuzzleSpecs] = useState<Record<number, PuzzleSpec>>({});
 
   const [collectedMetrics, setCollectedMetrics] = useState<HouseNavLevelMetric[]>([]);
   const [lastLevelMetric, setLastLevelMetric] = useState<HouseNavLevelMetric | null>(null);
@@ -110,17 +119,34 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
 
   const levels: HouseNavLevel[] = schoolLevel === 'ilkokul' ? ilkokuluLevels : anaokuluLevels;
-  const maps = schoolLevel === 'ilkokul' ? houseMaps7x7 : houseMaps;
   const level = levels[levelIndex];
-  const map = maps[level.mapRoomId];
+  const map = currentMaps[level.mapRoomId];
   const nextTaskStep = level.taskSteps[taskProgress];
   const activeTargetObjectId = nextTaskStep?.targetObjectId;
   const studentFirstName = currentStudent?.firstName?.trim() || 'Kahraman';
 
-  function resetForLevel(index: number, activeLevels: HouseNavLevel[]) {
+  function resetForLevel(index: number, activeLevels: HouseNavLevel[], activeSchoolLevel: SchoolReadinessLevel) {
     const lvl = activeLevels[index];
+    // Fresh, always-solvable layout for this room every time the level starts - different from the
+    // last time it was played, stable across retries within this same attempt at the level.
+    const freshMaps = generateHouseMaps(activeSchoolLevel);
+    const freshMap = freshMaps[lvl.mapRoomId];
+    const start = lvl.startAtObjectId
+      ? freshMap.objects.find((o) => o.id === lvl.startAtObjectId)!.position
+      : { row: 0, col: 0 };
+    // Every miniPuzzle step gets its own freshly-generated spec, same "regenerate at level-start,
+    // stay stable across retries" rule as the maps themselves.
+    const freshPuzzles: Record<number, PuzzleSpec> = {};
+    lvl.taskSteps.forEach((step, idx) => {
+      if (step.kind === 'miniPuzzle' && step.puzzleType) {
+        freshPuzzles[idx] = generatePuzzle(step.puzzleType, activeSchoolLevel);
+      }
+    });
+    setCurrentMaps(freshMaps);
+    setCurrentPuzzleSpecs(freshPuzzles);
+    setLevelStartPosition(start);
     setEntries([]);
-    setCharacterPosition(lvl.startPosition);
+    setCharacterPosition(start);
     setCharacterDirection('right');
     setAttempts(0);
     setTaskProgress(0);
@@ -141,7 +167,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   function handleSelectSchoolLevel(chosen: SchoolReadinessLevel) {
     setSchoolLevel(chosen);
     setLevelIndex(0);
-    resetForLevel(0, chosen === 'ilkokul' ? ilkokuluLevels : anaokuluLevels);
+    resetForLevel(0, chosen === 'ilkokul' ? ilkokuluLevels : anaokuluLevels, chosen);
     setCollectedMetrics([]);
     setIntroOpen(true);
     setPhase('playing');
@@ -206,7 +232,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
 
-    const waypoints: Position[] = [level.startPosition, ...level.taskSteps.map((t) => {
+    const waypoints: Position[] = [levelStartPosition, ...level.taskSteps.map((t) => {
       const obj = map.objects.find((o) => o.id === t.targetObjectId)!;
       return obj.position;
     })];
@@ -415,12 +441,12 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     if (levelIndex + 1 < levels.length) {
       const nextIndex = levelIndex + 1;
       setLevelIndex(nextIndex);
-      resetForLevel(nextIndex, levels);
+      resetForLevel(nextIndex, levels, schoolLevel);
       setPhase('playing');
       return;
     }
 
-    const metrics = computeHouseNavMetrics(collectedMetrics, levels.length);
+    const metrics = computeHouseNavMetrics(collectedMetrics, levels.length, schoolLevel);
     setFinalSummary({ metrics });
 
     if (currentStudent) {
@@ -510,8 +536,15 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         <InventoryStrip items={collectedItems} />
       </div>
 
-      {puzzleOpen && nextTaskStep ? (
-        <PuzzleScreen taskStep={nextTaskStep} onSolved={handlePuzzleSolved} />
+      {puzzleOpen && nextTaskStep && currentPuzzleSpecs[taskProgress] ? (
+        <PuzzleScreen
+          spec={currentPuzzleSpecs[taskProgress]}
+          onSolved={handlePuzzleSolved}
+          onHintUsed={() => {
+            sounds.playHint();
+            setHintUsed(true);
+          }}
+        />
       ) : (
         <>
           {nextTaskStep && (

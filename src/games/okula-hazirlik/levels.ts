@@ -7,7 +7,7 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Banyoya Git',
     instructions: 'Komutları kullanarak karakteri Banyo kapısına götür.',
     mapRoomId: 'main',
-    startPosition: { row: 0, col: 0 },
+    startAtObjectId: 'door-child-room',
     taskSteps: [
       { kind: 'moveTo', targetObjectId: 'door-bathroom', actionLabel: 'Banyo kapısına git', feedbackLabel: 'Banyoya ulaştın!' },
     ],
@@ -19,7 +19,6 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Elini Yüzünü Yıka',
     instructions: 'Lavaboya git ve elini yüzünü yıka.',
     mapRoomId: 'bathroom',
-    startPosition: { row: 0, col: 0 },
     taskSteps: [
       { kind: 'enterAt', targetObjectId: 'sink', actionLabel: 'Elini yüzünü yıka', feedbackLabel: 'Elini yüzünü yıkadın!' },
     ],
@@ -31,7 +30,7 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Mutfağa Git',
     instructions: 'Komutları kullanarak karakteri Mutfak kapısına götür.',
     mapRoomId: 'main',
-    startPosition: { row: 0, col: 4 },
+    startAtObjectId: 'door-bathroom',
     taskSteps: [
       { kind: 'moveTo', targetObjectId: 'door-kitchen', actionLabel: 'Mutfak kapısına git', feedbackLabel: 'Mutfağa ulaştın!' },
     ],
@@ -43,7 +42,6 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Kahvaltı Yap',
     instructions: 'Masanın yanına git ve kahvaltı yap.',
     mapRoomId: 'kitchen',
-    startPosition: { row: 0, col: 0 },
     taskSteps: [
       { kind: 'enterAt', targetObjectId: 'table', actionLabel: 'Kahvaltı yap', feedbackLabel: 'Kahvaltı yaptın!' },
     ],
@@ -55,7 +53,7 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Çocuk Odasına Git',
     instructions: 'Komutları kullanarak karakteri Çocuk Odası kapısına götür.',
     mapRoomId: 'main',
-    startPosition: { row: 4, col: 0 },
+    startAtObjectId: 'door-kitchen',
     taskSteps: [
       { kind: 'moveTo', targetObjectId: 'door-child-room', actionLabel: 'Çocuk Odası kapısına git', feedbackLabel: 'Çocuk odasına ulaştın!' },
     ],
@@ -67,24 +65,25 @@ export const anaokuluLevels: HouseNavLevel[] = [
     title: 'Çantanı Hazırla',
     instructions: 'Önce kitabı al, sonra çantaya git ve kitabı çantaya koy. Sıra önemli!',
     mapRoomId: 'child-room',
-    startPosition: { row: 0, col: 0 },
     taskSteps: [
+      { kind: 'miniPuzzle', targetObjectId: 'wardrobe', actionLabel: 'Kıyafetlerini giy', feedbackLabel: 'Kıyafetlerini giydin!', puzzleType: 'orderedChoice' },
       { kind: 'enterAt', targetObjectId: 'book', actionLabel: 'Kitabı al', feedbackLabel: 'Kitabı aldın!' },
       { kind: 'enterAt', targetObjectId: 'backpack', actionLabel: 'Çantayı bul', feedbackLabel: 'Çantayı buldun!' },
       { kind: 'enterAt', targetObjectId: 'backpack', actionLabel: 'Kitabı çantaya koy', feedbackLabel: 'Kitabı çantaya koydun!' },
     ],
-    points: 20,
+    points: 25,
   },
   {
     id: 'okul-7',
     order: 7,
     title: 'Evden Çık',
-    instructions: 'Çıkış kapısına git ve evden çık.',
+    instructions: 'Çıkış kapısına git, önce bulmacayı çöz sonra evden çık.',
     mapRoomId: 'main',
-    startPosition: { row: 0, col: 0 },
+    startAtObjectId: 'door-child-room',
     taskSteps: [
+      { kind: 'miniPuzzle', targetObjectId: 'door-exit', actionLabel: 'Çıkmadan önce bulmacayı çöz', feedbackLabel: 'Bulmacayı çözdün!', puzzleType: 'loopCount' },
       { kind: 'enterAt', targetObjectId: 'door-exit', actionLabel: 'Evden çık', feedbackLabel: 'Okula gitmeye hazırsın!' },
     ],
-    points: 20,
+    points: 25,
   },
 ];

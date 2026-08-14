@@ -31,6 +31,7 @@ export function calculateLevelStars(
 export function computeHouseNavMetrics(
   levelMetrics: HouseNavLevelMetric[],
   totalLevelsInGame: number,
+  schoolLevel?: 'anaokulu' | 'ilkokul',
 ): HouseNavMetrics {
   const n = levelMetrics.length || 1;
 
@@ -77,5 +78,6 @@ export function computeHouseNavMetrics(
     yonBulmaPct,
     problemCozmePct,
     gorevTamamlamaPct,
+    schoolLevel,
   };
 }

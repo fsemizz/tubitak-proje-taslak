@@ -29,9 +29,14 @@ export function HouseNavReportCard({ metrics }: HouseNavReportCardProps) {
     <Card className="border-teal-200 bg-teal-50/40">
       <CardContent className="flex flex-col gap-6 py-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Trophy className="size-5 text-teal-600" />
             <h3 className="font-display text-lg font-extrabold text-teal-900">Okula Hazırlık Karnesi</h3>
+            {metrics.schoolLevel && (
+              <span className="rounded-full bg-teal-600 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                {metrics.schoolLevel === 'ilkokul' ? 'İlkokul' : 'Anaokulu'}
+              </span>
+            )}
           </div>
           <div className="flex gap-0.5">
             {[1, 2, 3, 4, 5].map((n) => (

@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ClipboardList } from 'lucide-react';
 import { ShakeOnError } from '@/components/primitives/ShakeOnError';
 import { useGameSounds } from '@/hooks/useGameSounds';
 import { cn } from '@/lib/utils';
@@ -56,19 +55,6 @@ export function MatchingSchemaPuzzle({ spec, onSolved }: MatchingSchemaPuzzlePro
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      <div className="w-full rounded-xl border-2 border-dashed border-violet-300 bg-violet-50/60 p-3">
-        <p className="mb-1.5 flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wide text-violet-700">
-          <ClipboardList className="size-3.5" /> Ders Programın
-        </p>
-        <ul className="flex flex-col gap-1 text-center text-sm font-semibold text-violet-900">
-          {spec.pairs.map((pair) => (
-            <li key={pair.id}>
-              {pair.leftLabel} → {pair.rightLabel}
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <ShakeOnError trigger={wrongToken} className="grid w-full grid-cols-2 gap-4">
       <div className="flex flex-col gap-2">
         {spec.pairs.map((pair) => {
