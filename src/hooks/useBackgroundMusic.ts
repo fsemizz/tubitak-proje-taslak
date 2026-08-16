@@ -115,5 +115,23 @@ export function useBackgroundMusic() {
     [clearPending],
   );
 
+  // Browsers block audio.play() until the page has had at least one real user gesture — the very
+  // first start() call (e.g. menu music firing on page load) is silently rejected. Once the user
+  // taps/clicks/presses a key anywhere, retry whatever we were trying to play; harmless no-op if
+  // it's already playing or nothing was requested.
+  useEffect(() => {
+    function retryAfterGesture() {
+      if (desiredTrackIdRef.current && audioRef.current?.paused) {
+        playNow(desiredTrackIdRef.current);
+      }
+    }
+    window.addEventListener('pointerdown', retryAfterGesture);
+    window.addEventListener('keydown', retryAfterGesture);
+    return () => {
+      window.removeEventListener('pointerdown', retryAfterGesture);
+      window.removeEventListener('keydown', retryAfterGesture);
+    };
+  }, [playNow]);
+
   return { start, stop };
 }
