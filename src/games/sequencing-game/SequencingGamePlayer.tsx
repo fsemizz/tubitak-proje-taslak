@@ -31,6 +31,8 @@ export default function SequencingGamePlayer({
   const [feedback, setFeedback] = useState<'idle' | 'wrong'>('idle');
   const [wrongToken, setWrongToken] = useState(0);
   const [hintedItemId, setHintedItemId] = useState<string | null>(null);
+  const [hintedWrongPlacedId, setHintedWrongPlacedId] = useState<string | null>(null);
+  const [hintMessage, setHintMessage] = useState<string | null>(null);
   const [hintUsed, setHintUsed] = useState(false);
   const [startedAt] = useState(() => Date.now());
 
@@ -41,6 +43,8 @@ export default function SequencingGamePlayer({
     if (!item) return;
     setFeedback('idle');
     setHintedItemId(null);
+    setHintedWrongPlacedId(null);
+    setHintMessage(null);
     setPool((p) => p.filter((i) => i.id !== itemId));
     setPlaced((p) => [...p, item]);
   }
@@ -49,6 +53,8 @@ export default function SequencingGamePlayer({
     const item = placed.find((i) => i.id === itemId);
     if (!item) return;
     setFeedback('idle');
+    setHintedWrongPlacedId(null);
+    setHintMessage(null);
     setPlaced((p) => p.filter((i) => i.id !== itemId));
     setPool((p) => [...p, item]);
   }
@@ -58,13 +64,29 @@ export default function SequencingGamePlayer({
     setPlaced([]);
     setFeedback('idle');
     setHintedItemId(null);
+    setHintedWrongPlacedId(null);
+    setHintMessage(null);
   }
 
   function useHint() {
+    // First, check whether what's already placed still matches the correct order so far — if the
+    // player placed an item out of order, the "next correct id" the old logic looked for may already
+    // be sitting in `placed` instead of `pool`, which used to make the hint silently do nothing.
+    const wrongIndex = placed.findIndex((item, idx) => item.id !== level.correctOrder[idx]);
+    if (wrongIndex !== -1) {
+      sounds.playHint();
+      setHintUsed(true);
+      setHintedItemId(null);
+      setHintedWrongPlacedId(placed[wrongIndex].id);
+      setHintMessage(`${wrongIndex + 1}. sıradaki adım yanlış olabilir — onu geri alıp tekrar dene.`);
+      setTimeout(() => setHintedWrongPlacedId((cur) => (cur === placed[wrongIndex].id ? null : cur)), 2500);
+      return;
+    }
     const nextCorrectId = level.correctOrder[placed.length];
     if (!nextCorrectId || !pool.some((i) => i.id === nextCorrectId)) return;
     sounds.playHint();
     setHintUsed(true);
+    setHintMessage(null);
     setHintedItemId(nextCorrectId);
     setTimeout(() => setHintedItemId((cur) => (cur === nextCorrectId ? null : cur)), 2500);
   }
@@ -124,7 +146,12 @@ export default function SequencingGamePlayer({
                     exit={{ opacity: 0, scale: 0.8 }}
                     whileDrag={{ scale: 1.03, boxShadow: '0 6px 16px rgba(0,0,0,0.18)' }}
                     style={{ touchAction: 'none' }}
-                    className="tap-target flex w-full cursor-grab items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm active:cursor-grabbing"
+                    className={cn(
+                      'tap-target flex w-full cursor-grab items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white shadow-sm active:cursor-grabbing',
+                      hintedWrongPlacedId === item.id
+                        ? 'animate-pulse bg-indigo-600 ring-2 ring-amber-400'
+                        : 'bg-indigo-600',
+                    )}
                   >
                     <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/25 text-xs">
                       {idx + 1}
@@ -174,9 +201,10 @@ export default function SequencingGamePlayer({
         </AnimatePresence>
       </div>
 
-      {hintedItemId && (
+      {(hintedItemId || hintMessage) && (
         <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-700">
-          <Lightbulb className="size-4 shrink-0" /> İpucu: Parlayan adım sırada bir sonraki olabilir!
+          <Lightbulb className="size-4 shrink-0" />
+          İpucu: {hintMessage ?? 'Parlayan adım sırada bir sonraki olabilir!'}
         </div>
       )}
       {feedback === 'wrong' && (

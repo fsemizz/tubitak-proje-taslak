@@ -31,17 +31,18 @@ export function useBackgroundMusic() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const pendingTimeoutRef = useRef<number | null>(null);
   const desiredTrackIdRef = useRef<string | null>(null);
+  // True only while the user has deliberately muted via the music toggle — distinguishes that pause
+  // from an unrequested one (OS/browser audio-focus interruptions, media-session hiccups, etc.) so the
+  // self-heal listener below doesn't immediately undo the mute.
+  const userMutedRef = useRef(false);
 
   const getAudio = useCallback(() => {
     if (!audioRef.current) {
       const audio = new Audio();
       audio.loop = true;
       audio.volume = 0.35;
-      // Self-heal from unrequested pauses (OS/browser audio-focus interruptions, media-session
-      // hiccups, etc.) — if the browser pauses playback without us calling stop(), and we still
-      // want a track playing, resume it. desiredTrackIdRef is only cleared by our own stop().
       audio.addEventListener('pause', () => {
-        if (desiredTrackIdRef.current && !audio.ended) {
+        if (desiredTrackIdRef.current && !audio.ended && !userMutedRef.current) {
           void audio.play().catch(() => {});
         }
       });
@@ -61,6 +62,7 @@ export function useBackgroundMusic() {
     (trackId: string) => {
       const file = TRACK_FILE[trackId];
       if (!file) return;
+      userMutedRef.current = false;
       const audio = getAudio();
       const url = trackUrl(file);
       if (!audio.src.endsWith(url)) {
@@ -97,6 +99,7 @@ export function useBackgroundMusic() {
   // Toggling the global music switch pauses/resumes whichever track is currently active.
   useEffect(() => {
     if (!musicEnabled) {
+      userMutedRef.current = true;
       clearPending();
       audioRef.current?.pause();
       return;
@@ -121,7 +124,7 @@ export function useBackgroundMusic() {
   // it's already playing or nothing was requested.
   useEffect(() => {
     function retryAfterGesture() {
-      if (desiredTrackIdRef.current && audioRef.current?.paused) {
+      if (desiredTrackIdRef.current && audioRef.current?.paused && !userMutedRef.current) {
         playNow(desiredTrackIdRef.current);
       }
     }

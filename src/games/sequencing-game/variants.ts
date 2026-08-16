@@ -15,7 +15,7 @@ const VARIANTS: Record<string, SequencingVariant[]> = {
       return { items, correctOrder: order(items) };
     })(),
     (() => {
-      const items = [it('a', 'Ellerini yıka'), it('b', 'Süt bardağını al'), it('c', 'Bardağa süt koy'), it('d', 'Ekmeğini al'), it('e', 'Otur ve kahvaltını et')];
+      const items = [it('a', 'Ellerini yıka'), it('b', 'Fırçanı suyla ıslat'), it('c', 'Fırçaya macun sür'), it('d', 'Dişlerini fırçala'), it('e', 'Ağzını çalkala ve fırçanı yıka')];
       return { items, correctOrder: order(items) };
     })(),
   ],
@@ -25,7 +25,7 @@ const VARIANTS: Record<string, SequencingVariant[]> = {
       return { items, correctOrder: order(items) };
     })(),
     (() => {
-      const items = [it('a', 'Pijamalarını giy'), it('b', 'Dişlerini fırçala'), it('c', 'Biraz kitap oku'), it('d', 'Işığı kapat'), it('e', 'Battaniyeni ört'), it('f', 'Uyu')];
+      const items = [it('a', 'Uyan ve gerinme yap'), it('b', 'Yüzünü ve ellerini yıka'), it('c', 'Kahvaltını et'), it('d', 'Okul kıyafetlerini giy'), it('e', 'Saçını tara'), it('f', 'Çantanı al ve kapıdan çık')];
       return { items, correctOrder: order(items) };
     })(),
   ],
@@ -35,7 +35,7 @@ const VARIANTS: Record<string, SequencingVariant[]> = {
       return { items, correctOrder: order(items) };
     })(),
     (() => {
-      const items = [it('a', 'Ellerini yıka'), it('b', 'Marulu yıka'), it('c', 'Domatesi doğra'), it('d', 'Salatalığı doğra'), it('e', 'Hepsini kaseye koy'), it('f', 'Zeytinyağı ekle'), it('g', 'Karıştır ve servis yap')];
+      const items = [it('a', 'Ellerini yıka'), it('b', 'İki dilim ekmek al'), it('c', 'Ekmeklere margarin sür'), it('d', 'Jambon ve peynir yerleştir'), it('e', 'Bir marul yaprağı ekle'), it('f', 'Ekmekleri kapat ve hafifçe bastır'), it('g', 'Tabağa koy ve afiyetle ye')];
       return { items, correctOrder: order(items) };
     })(),
   ],
@@ -45,7 +45,7 @@ const VARIANTS: Record<string, SequencingVariant[]> = {
       return { items, correctOrder: order(items) };
     })(),
     (() => {
-      const items = [it('a', 'Bir kağıt al'), it('b', 'Kağıdı ortadan katla'), it('c', 'Üst köşeleri katla'), it('d', 'Kenarları içe katla'), it('e', 'Kanatları katla'), it('f', 'Ucunu düzelt'), it('g', 'Fırlatmaya hazırlan'), it('h', 'Uçağı fırlat')];
+      const items = [it('a', 'Şeffaf bir bardak al'), it('b', 'Bardağın içine pamuk koy'), it('c', 'Pamuğu suyla nemlendir'), it('d', 'Fasulye tohumunu pamuğun üstüne koy'), it('e', 'Bardağı pencere kenarına koy'), it('f', 'Her gün biraz su ekle'), it('g', 'Filizlenmesini bekle'), it('h', 'Büyüyen fasulyeyi gözlemle')];
       return { items, correctOrder: order(items) };
     })(),
   ],
@@ -70,9 +70,9 @@ const VARIANTS: Record<string, SequencingVariant[]> = {
     })(),
     (() => {
       const items = [
-        it('a', 'Sırt çantanı hazırla'), it('b', 'Su matarasını doldur'), it('c', 'Öğle yemeğini paketle'), it('d', 'Şapkanı al'),
-        it('e', 'Güneş kremi sür'), it('f', 'Rahat ayakkabı giy'), it('g', 'Fotoğraf makinesini al'), it('h', 'Otobüse bin'),
-        it('i', 'Sırana otur'), it('j', 'Rehberi dinle'), it('k', 'Notlar al'), it('l', 'Eve dönünce gezini anlat'),
+        it('a', 'Doğum günü davetiyesini oku'), it('b', 'Arkadaşına bir hediye seç'), it('c', 'Hediyeyi süslü kağıda sar'), it('d', 'Güzel kıyafetlerini giy'),
+        it('e', 'Saçını tara'), it('f', 'Ailenle yola çık'), it('g', 'Kapıyı çal ve içeri gir'), it('h', 'Doğum günü çocuğuna hediyeni ver'),
+        it('i', 'Oyunlara katıl'), it('j', 'Pasta kesilirken şarkı söyle'), it('k', 'Bir dilim pasta ye'), it('l', 'Ailene teşekkür edip eve dön'),
       ];
       return { items, correctOrder: order(items) };
     })(),
