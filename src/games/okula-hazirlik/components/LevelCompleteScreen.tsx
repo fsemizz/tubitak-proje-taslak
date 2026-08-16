@@ -4,6 +4,7 @@ import { Star, ArrowRight, Lightbulb, Footprints, Route, ListChecks, RotateCw, T
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { ConfettiBurst } from '@/components/primitives/ConfettiBurst';
 import { formatDuration } from '@/lib/scoring';
 import { cn } from '@/lib/utils';
 import type { HouseNavLevelMetric } from '@/types/result';
@@ -55,7 +56,8 @@ export function LevelCompleteScreen({
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-5 py-6">
+    <div className="relative mx-auto flex w-full max-w-md flex-col items-center gap-5 py-6">
+      <ConfettiBurst trigger={1} />
       <CelebrationBurst />
       <div className="text-center">
         <h2 className="font-display text-2xl font-extrabold text-foreground">Tebrikler! 🎉</h2>

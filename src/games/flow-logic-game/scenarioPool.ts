@@ -33,7 +33,7 @@ export const SIMPLE_TEMPLATES: SimpleTemplate[] = [
     condLabel: 'Eğer engel kırmızıysa',
     actionLabel: 'Zıpla',
     distractorCondLabel: 'Eğer engel maviyse',
-    distractorActionLabel: 'Eğil',
+    distractorActionLabel: 'Yürü',
   },
   {
     scenario: 'Trafik ışığı yeşil yandı. Kural: Eğer ışık yeşilse yürü, kırmızıysa dur.',

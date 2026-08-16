@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { ConfettiBurst } from '@/components/primitives/ConfettiBurst';
 import { ScoreBadge } from '@/components/primitives/ScoreBadge';
 import { ScoreBreakdown } from './ScoreBreakdown';
 import { formatDuration } from '@/lib/scoring';
@@ -17,7 +18,8 @@ const CONGRATS_MESSAGE: Record<1 | 2 | 3, string> = {
 
 export function ResultSummaryCard({ summary }: ResultSummaryCardProps) {
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <ConfettiBurst trigger={1} />
       <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
         <CelebrationBurst />
         <div>

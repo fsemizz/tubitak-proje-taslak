@@ -4,6 +4,7 @@ import { Home, Star, Trophy, RotateCcw, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { ConfettiBurst } from '@/components/primitives/ConfettiBurst';
 import { SkillRadarChart } from '@/components/primitives/SkillRadarChart';
 import { formatDuration } from '@/lib/scoring';
 import { ROUTE_PATHS } from '@/app/routePaths';
@@ -44,7 +45,8 @@ export function GameCompleteScreen({
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-6">
+    <div className="relative mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-6">
+      <ConfettiBurst trigger={1} />
       <CelebrationBurst />
       <div className="text-center">
         <h1 className="font-display text-2xl font-extrabold text-foreground">

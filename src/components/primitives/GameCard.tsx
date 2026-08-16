@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Clock3, Layers } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { KazanimChip } from './KazanimChip';
@@ -22,10 +23,25 @@ export function GameCard({ game, hasActiveStudent }: GameCardProps) {
 
   return (
     <Link to={targetPath} className="group block h-full focus:outline-none">
-      <Card className="h-full overflow-hidden py-0 transition-all group-hover:-translate-y-1 group-hover:shadow-lg group-focus-visible:-translate-y-1 group-focus-visible:shadow-lg">
-        <div className={cn('flex h-24 items-center justify-between bg-gradient-to-br px-5', theme.gradientFrom, theme.gradientTo)}>
-          <Icon className="size-10 text-white/90" strokeWidth={1.75} />
-          <span className="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold text-white">
+      <Card
+        className={cn(
+          'h-full overflow-hidden py-0 shadow-md transition-all duration-300',
+          'group-hover:-translate-y-1.5 group-hover:shadow-xl group-focus-visible:-translate-y-1.5 group-focus-visible:shadow-xl',
+          'group-hover:ring-2 group-hover:ring-offset-2',
+          theme.ring,
+        )}
+      >
+        <div className={cn('relative flex h-24 items-center justify-between overflow-hidden bg-gradient-to-br px-5', theme.gradientFrom, theme.gradientTo)}>
+          <div className="pointer-events-none absolute -right-6 -top-8 size-28 rounded-full bg-white/15 blur-xl" />
+          <div className="pointer-events-none absolute -bottom-10 -left-4 size-24 rounded-full bg-white/10 blur-2xl" />
+          <motion.div
+            whileHover={{ rotate: -8, scale: 1.12 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 12 }}
+            className="relative z-10 flex size-12 items-center justify-center rounded-2xl bg-white/15 shadow-inner backdrop-blur-sm"
+          >
+            <Icon className="size-7 text-white drop-shadow-sm" strokeWidth={1.75} />
+          </motion.div>
+          <span className="relative z-10 rounded-full bg-white/25 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-sm">
             {CATEGORY_LABEL[game.category]}
           </span>
         </div>
