@@ -11,12 +11,15 @@ export const matchingLevels: MatchingLevel[] = [
     difficulty: 'kolay',
     instructions: 'Okları doğru yön kelimesiyle eşleştir.',
     points: 10,
+    optimalDurationSeconds: 45,
+    minSteps: 5,
     type: 'matching',
     pairs: [
       { id: 'p1', left: { label: '↑' }, right: { label: 'İleri' } },
       { id: 'p2', left: { label: '↓' }, right: { label: 'Geri' } },
       { id: 'p3', left: { label: '→' }, right: { label: 'Sağa' } },
       { id: 'p4', left: { label: '←' }, right: { label: 'Sola' } },
+      { id: 'p5', left: { label: '⟲' }, right: { label: 'Geri Dön' } },
     ],
   },
   {
@@ -27,12 +30,15 @@ export const matchingLevels: MatchingLevel[] = [
     difficulty: 'kolay',
     instructions: 'Komut ikonlarını doğru hareketle eşleştir.',
     points: 10,
+    optimalDurationSeconds: 45,
+    minSteps: 5,
     type: 'matching',
     pairs: [
       { id: 'p1', left: { label: '🚶' }, right: { label: 'Yürü' } },
       { id: 'p2', left: { label: '🦘' }, right: { label: 'Zıpla' } },
       { id: 'p3', left: { label: '✋' }, right: { label: 'Dur' } },
       { id: 'p4', left: { label: '🏃' }, right: { label: 'Koş' } },
+      { id: 'p5', left: { label: '🧍' }, right: { label: 'Bekle' } },
     ],
   },
   {
@@ -43,12 +49,15 @@ export const matchingLevels: MatchingLevel[] = [
     difficulty: 'orta',
     instructions: 'Sembolleri algoritma anlamlarıyla eşleştir.',
     points: 15,
+    optimalDurationSeconds: 60,
+    minSteps: 5,
     type: 'matching',
     pairs: [
       { id: 'p1', left: { label: '▶' }, right: { label: 'Başla' } },
       { id: 'p2', left: { label: '⏹' }, right: { label: 'Bitir' } },
       { id: 'p3', left: { label: '◆' }, right: { label: 'Karar' } },
       { id: 'p4', left: { label: '▭' }, right: { label: 'İşlem' } },
+      { id: 'p5', left: { label: '↻' }, right: { label: 'Tekrarla' } },
     ],
   },
   {
@@ -59,12 +68,15 @@ export const matchingLevels: MatchingLevel[] = [
     difficulty: 'orta',
     instructions: 'İkonları doğru kavramla eşleştir.',
     points: 15,
+    optimalDurationSeconds: 60,
+    minSteps: 5,
     type: 'matching',
     pairs: [
       { id: 'p1', left: { label: '🔁' }, right: { label: 'Tekrarla' } },
       { id: 'p2', left: { label: '❓' }, right: { label: 'Eğer' } },
       { id: 'p3', left: { label: '🔀' }, right: { label: 'Değilse' } },
       { id: 'p4', left: { label: '🏁' }, right: { label: 'Hedef' } },
+      { id: 'p5', left: { label: '✅' }, right: { label: 'Doğru' } },
     ],
   },
   {
@@ -73,8 +85,10 @@ export const matchingLevels: MatchingLevel[] = [
     order: 5,
     title: 'Hafıza Ustası',
     difficulty: 'zor',
-    instructions: '6 çift kart karışık dağıtıldı. Süre sınırlı hafıza modunda eşleştir.',
+    instructions: '7 çift kart karışık dağıtıldı. Süre sınırlı hafıza modunda eşleştir.',
     points: 20,
+    optimalDurationSeconds: 90,
+    minSteps: 7,
     type: 'matching',
     pairs: [
       { id: 'p1', left: { label: '↑' }, right: { label: 'İleri' } },
@@ -83,6 +97,7 @@ export const matchingLevels: MatchingLevel[] = [
       { id: 'p4', left: { label: '❓' }, right: { label: 'Eğer' } },
       { id: 'p5', left: { label: '▶' }, right: { label: 'Başla' } },
       { id: 'p6', left: { label: '⏹' }, right: { label: 'Bitir' } },
+      { id: 'p7', left: { label: '🏃' }, right: { label: 'Koş' } },
     ],
   },
 ];

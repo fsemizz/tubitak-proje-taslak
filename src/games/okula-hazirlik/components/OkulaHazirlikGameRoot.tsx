@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bed, ChefHat, Home, Lightbulb, Rocket, ShowerHead, Sparkles, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,8 @@ import { generatePuzzle } from '../puzzleGenerator';
 import { shortestPathLength } from '../pathfinding';
 import { accuracyTierFromAttempts, calculateLevelStars, computeHouseNavMetrics } from '../scoring';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { useBackgroundMusic, GAME_START_MUSIC_DELAY_MS } from '@/hooks/useBackgroundMusic';
+import { useLevelTimer } from '@/hooks/useLevelTimer';
 import { createId } from '@/lib/id';
 import { calculateStarRating } from '@/lib/scoring';
 import { useSessionStore } from '@/stores/useSessionStore';
@@ -73,6 +75,8 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const navigate = useNavigate();
   const currentStudent = useSessionStore((s) => s.currentStudent);
   const sounds = useGameSounds();
+  const music = useBackgroundMusic();
+  useEffect(() => () => music.stop(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [schoolLevel, setSchoolLevel] = useState<SchoolReadinessLevel>('anaokulu');
   const [introOpen, setIntroOpen] = useState(true);
@@ -124,6 +128,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   const nextTaskStep = level.taskSteps[taskProgress];
   const activeTargetObjectId = nextTaskStep?.targetObjectId;
   const studentFirstName = currentStudent?.firstName?.trim() || 'Kahraman';
+  const liveElapsedSeconds = useLevelTimer(level.id);
 
   function resetForLevel(index: number, activeLevels: HouseNavLevel[], activeSchoolLevel: SchoolReadinessLevel) {
     const lvl = activeLevels[index];
@@ -171,6 +176,8 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     setCollectedMetrics([]);
     setIntroOpen(true);
     setPhase('playing');
+    sounds.playGameStartJingle();
+    music.start(game.id, GAME_START_MUSIC_DELAY_MS);
   }
 
   function addCommand(type: CommandType) {
@@ -244,7 +251,15 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     // Rewards batching a whole step into one run over splitting it into many trial-and-error single moves.
     const planningEfficiencyPct = Math.min(100, (level.taskSteps.length / Math.max(1, totalRuns)) * 100);
     const accuracyTier = accuracyTierFromAttempts(newAttempts);
-    const starRating = calculateLevelStars(accuracyTier, pathEfficiencyPct, hintUsed, planningEfficiencyPct);
+    const timeSpentSeconds = Math.round((Date.now() - levelStartedAt) / 1000);
+    const starRating = calculateLevelStars(
+      accuracyTier,
+      pathEfficiencyPct,
+      hintUsed,
+      planningEfficiencyPct,
+      timeSpentSeconds,
+      level.optimalDurationSeconds,
+    );
 
     const metric: HouseNavLevelMetric = {
       levelId: level.id,
@@ -263,7 +278,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
       planningSuccess: newAttempts === 1,
       totalRunsUsed: totalRuns,
       planningEfficiencyPct,
-      timeSpentSeconds: Math.round((Date.now() - levelStartedAt) / 1000),
+      timeSpentSeconds,
     };
 
     setLastLevelMetric(metric);
@@ -425,9 +440,11 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         orderBroken: '🤔 Sırayı bozdun! Görevleri doğru sırayla yapmalısın.',
       };
       setErrorMessage(messages[failed]);
-      sounds.playError();
       if (failed === 'wall') {
+        sounds.playWallBump();
         setShakeToken((t) => t + 1);
+      } else {
+        sounds.playError();
       }
     }
     // Otherwise: the queue simply ran out before finishing every step, but nothing done was wrong -
@@ -477,6 +494,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
       await resultsService.submitGameCompletion(input);
     }
 
+    music.stop();
     setPhase('gameComplete');
   }
 
@@ -487,6 +505,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
   }
 
   function handleExitConfirm() {
+    music.stop();
     setExitDialogOpen(false);
     navigate(ROUTE_PATHS.home);
   }
@@ -512,6 +531,7 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     return (
       <LevelCompleteScreen
         metric={lastLevelMetric}
+        optimalDurationSeconds={level.optimalDurationSeconds}
         isLastLevel={levelIndex + 1 >= levels.length}
         onNext={handleLevelNext}
         onPlayLevelComplete={sounds.playLevelComplete}
@@ -526,6 +546,8 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
         totalLevels={levels.length}
         currentIndex={levelIndex}
         onRequestExit={() => setExitDialogOpen(true)}
+        timerSeconds={liveElapsedSeconds}
+        timerOptimalSeconds={level.optimalDurationSeconds}
       />
 
       <div className="flex flex-wrap items-start justify-between gap-3">

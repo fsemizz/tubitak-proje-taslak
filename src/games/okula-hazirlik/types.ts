@@ -99,6 +99,10 @@ export interface HouseNavLevel {
   startAtObjectId?: string;
   taskSteps: TaskStep[];
   points: number;
+  /** Target completion time for the 3-star time-closeness bonus. Going over never fails the level. */
+  optimalDurationSeconds: number;
+  /** Fewest steps a correct solution needs (informational — shown alongside the live timer). */
+  minSteps: number;
 }
 
 /** Static definition of an object a generated map places somewhere - the id/label/icon are fixed, position is not. */

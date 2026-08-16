@@ -6,6 +6,7 @@ import {
   GitBranch,
   Puzzle,
   Home,
+  Workflow,
   Users,
   Trophy,
   Clock3,
@@ -23,6 +24,7 @@ export const ICON_MAP: Record<GameIconKey, LucideIcon> = {
   conditional: GitBranch,
   matching: Puzzle,
   home: Home,
+  flow: Workflow,
 };
 
 export function getGameIcon(key: GameIconKey): LucideIcon {
@@ -106,6 +108,15 @@ export const CATEGORY_THEME: Record<GameCategory, CategoryPalette> = {
     badgeText: 'text-teal-700',
     ring: 'ring-teal-300',
     solidBg: 'bg-teal-600',
+  },
+  flowLogic: {
+    gradientFrom: 'from-violet-500',
+    gradientTo: 'to-purple-500',
+    accent: 'violet',
+    badgeBg: 'bg-violet-100',
+    badgeText: 'text-violet-700',
+    ring: 'ring-violet-300',
+    solidBg: 'bg-violet-600',
   },
 };
 

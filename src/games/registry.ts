@@ -9,6 +9,7 @@ import { loopMeta, loopLevels } from './loop-builder-game';
 import { conditionalMeta, conditionalLevels } from './conditional-logic-game';
 import { matchingMeta, matchingLevels } from './matching-game';
 import { okulaHazirlikMeta } from './okula-hazirlik';
+import { flowLogicMeta, flowLogicLevels } from './flow-logic-game';
 
 export const gameRegistry: Record<string, GameModule> = {
   [sequencingMeta.id]: {
@@ -40,6 +41,11 @@ export const gameRegistry: Record<string, GameModule> = {
     definition: matchingMeta,
     levels: matchingLevels,
     PlayerComponent: lazy(() => import('./matching-game/MatchingGamePlayer')),
+  },
+  [flowLogicMeta.id]: {
+    definition: flowLogicMeta,
+    levels: flowLogicLevels,
+    PlayerComponent: lazy(() => import('./flow-logic-game/FlowLogicGamePlayer')),
   },
   [okulaHazirlikMeta.id]: {
     definition: okulaHazirlikMeta,

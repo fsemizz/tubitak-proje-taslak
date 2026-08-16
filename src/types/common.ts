@@ -5,7 +5,8 @@ export type GameCategory =
   | 'loops'
   | 'conditionals'
   | 'matching'
-  | 'planning';
+  | 'planning'
+  | 'flowLogic';
 
 export type Difficulty = 'kolay' | 'orta' | 'zor';
 
@@ -23,4 +24,5 @@ export const CATEGORY_LABEL: Record<GameCategory, string> = {
   conditionals: 'Koşullu Düşünme',
   matching: 'Eşleştirme',
   planning: 'Planlama & Yön Bulma',
+  flowLogic: 'Koşullu Mantık & Akış Algısı',
 };

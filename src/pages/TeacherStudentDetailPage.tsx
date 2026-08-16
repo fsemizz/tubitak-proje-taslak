@@ -65,7 +65,7 @@ export default function TeacherStudentDetailPage() {
         const houseNavResult = results.find((r) => r.houseNavMetrics);
         return (
           <div className="flex flex-col gap-4">
-            <SectionHeading title="Beceri Profili" description="5 eksende algoritmik düşünme becerisi." />
+            <SectionHeading title="Beceri Profili" description="6 eksende algoritmik düşünme becerisi." />
             <StudentSkillProfileCard
               studentFirstName={student.firstName}
               results={results}

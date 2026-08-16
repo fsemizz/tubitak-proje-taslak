@@ -4,6 +4,7 @@ import { Star, ArrowRight, Lightbulb, Footprints, Route, ListChecks, RotateCw, T
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { formatDuration } from '@/lib/scoring';
 import { cn } from '@/lib/utils';
 import type { HouseNavLevelMetric } from '@/types/result';
 
@@ -15,18 +16,32 @@ const ACCURACY_LABEL: Record<1 | 2 | 3, string> = {
 
 interface LevelCompleteScreenProps {
   metric: HouseNavLevelMetric;
+  optimalDurationSeconds?: number;
   isLastLevel: boolean;
   onNext: () => void;
   onPlayLevelComplete?: () => void;
 }
 
-export function LevelCompleteScreen({ metric, isLastLevel, onNext, onPlayLevelComplete }: LevelCompleteScreenProps) {
+export function LevelCompleteScreen({
+  metric,
+  optimalDurationSeconds,
+  isLastLevel,
+  onNext,
+  onPlayLevelComplete,
+}: LevelCompleteScreenProps) {
   useEffect(() => {
     onPlayLevelComplete?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stats: { label: string; value: string; icon: typeof Star }[] = [
+    {
+      label: 'Süre',
+      value: optimalDurationSeconds
+        ? `${formatDuration(metric.timeSpentSeconds)} (hedef: ${formatDuration(optimalDurationSeconds)})`
+        : formatDuration(metric.timeSpentSeconds),
+      icon: Timer,
+    },
     { label: 'Doğruluk', value: ACCURACY_LABEL[metric.accuracyTier], icon: ListChecks },
     { label: 'En Kısa Yol', value: `${metric.shortestPathLength} adım`, icon: Route },
     { label: 'Senin Toplam Yolun', value: `${metric.stepsUsed} adım`, icon: Footprints },

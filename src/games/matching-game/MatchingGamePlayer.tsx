@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { ShakeOnError } from '@/components/primitives/ShakeOnError';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { pickMatchingVariant } from './variants';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { MatchingLevel } from '@/types/game';
@@ -24,10 +25,11 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function MatchingGamePlayer({
-  level,
+  level: shell,
   onComplete,
 }: GamePlayerProps<MatchingLevel>) {
   const sounds = useGameSounds();
+  const level = useMemo(() => ({ ...shell, ...pickMatchingVariant(shell.id) }), [shell.id]);
   const leftItems = useMemo(() => shuffle(level.pairs), [level.pairs]);
   const rightItems = useMemo(() => shuffle(level.pairs), [level.pairs]);
 

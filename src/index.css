@@ -85,8 +85,9 @@
 
 @layer utilities {
   .tap-target {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 56px;
+    min-width: 56px;
+    touch-action: manipulation;
   }
   .scrollbar-thin {
     scrollbar-width: thin;

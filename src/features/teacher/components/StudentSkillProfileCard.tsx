@@ -55,7 +55,7 @@ export function StudentSkillProfileCard({ studentFirstName, results, kbsScore }:
         </div>
 
         <div className="flex items-center justify-center rounded-xl border border-border bg-muted/30 p-4">
-          <SkillRadarChart axes={axes} title="5-Eksenli Beceri Radarı" />
+          <SkillRadarChart axes={axes} title="6-Eksenli Beceri Radarı" />
         </div>
       </CardContent>
     </Card>

@@ -52,7 +52,7 @@ export function ConditionalRulePuzzle({ spec, onSolved }: ConditionalRulePuzzleP
               onClick={() => choose(opt.id)}
               disabled={!!solvedId || isWrong}
               className={cn(
-                'flex flex-col items-center gap-1.5 rounded-xl border-2 p-4 shadow-sm transition',
+                'tap-target flex flex-col items-center gap-1.5 rounded-xl border-2 p-4 shadow-sm transition',
                 isSolved
                   ? 'border-emerald-500 bg-emerald-50'
                   : isWrong

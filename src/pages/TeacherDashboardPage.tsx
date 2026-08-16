@@ -42,7 +42,7 @@ export default function TeacherDashboardPage() {
               Hoş geldin, {session?.displayName}
             </h1>
             <p className="max-w-2xl text-sm font-medium leading-relaxed text-slate-300">
-              Öğrencilerinin 5 eksenli algoritmik düşünme becerilerini ve Okula Hazırlık oyunundaki Kodlama Becerisi
+              Öğrencilerinin 6 eksenli algoritmik düşünme becerilerini ve Okula Hazırlık oyunundaki Kodlama Becerisi
               Skorlarını (KBS) buradan takip edebilirsin.
             </p>
           </div>

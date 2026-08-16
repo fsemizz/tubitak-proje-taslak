@@ -5,7 +5,14 @@ import type { StudentProfile } from '@/types/student';
 import { gameRegistry } from '@/games/registry';
 import type { RadarAxis } from '@/components/primitives/SkillRadarChart';
 
-const PROFILE_CATEGORIES: GameCategory[] = ['sequencing', 'pattern', 'debugging', 'loops', 'conditionals'];
+const PROFILE_CATEGORIES: GameCategory[] = [
+  'sequencing',
+  'pattern',
+  'debugging',
+  'loops',
+  'conditionals',
+  'flowLogic',
+];
 
 const SHORT_LABEL: Record<GameCategory, string> = {
   sequencing: 'Sıralama',
@@ -15,6 +22,7 @@ const SHORT_LABEL: Record<GameCategory, string> = {
   conditionals: 'Koşul',
   matching: 'Eşleştirme',
   planning: 'Planlama',
+  flowLogic: 'Akış Mantığı',
 };
 
 export function computeCategorySkillProfile(results: GameCompletionSummary[]): RadarAxis[] {

@@ -2,18 +2,22 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface UiState {
-  soundEnabled: boolean;
+  sfxEnabled: boolean;
+  musicEnabled: boolean;
   reducedMotion: boolean;
-  toggleSound: () => void;
+  toggleSfx: () => void;
+  toggleMusic: () => void;
   toggleReducedMotion: () => void;
 }
 
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
-      soundEnabled: true,
+      sfxEnabled: true,
+      musicEnabled: true,
       reducedMotion: false,
-      toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
+      toggleSfx: () => set((state) => ({ sfxEnabled: !state.sfxEnabled })),
+      toggleMusic: () => set((state) => ({ musicEnabled: !state.musicEnabled })),
       toggleReducedMotion: () => set((state) => ({ reducedMotion: !state.reducedMotion })),
     }),
     {

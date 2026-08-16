@@ -59,7 +59,7 @@ export function SequencePatternPuzzle({ spec, onSolved }: SequencePatternPuzzleP
             onClick={() => choose(opt)}
             disabled={solved}
             className={cn(
-              'flex size-14 items-center justify-center rounded-xl border-2 text-lg font-bold shadow-sm transition',
+              'tap-target flex size-14 items-center justify-center rounded-xl border-2 text-lg font-bold shadow-sm transition',
               solved && opt === spec.correctAnswer
                 ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                 : wrongOption === opt

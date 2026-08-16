@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { useUiStore } from '@/stores/useUiStore';
 
 type ToneShape = 'sine' | 'triangle' | 'square';
 
@@ -18,6 +19,7 @@ function getAudioContextClass(): typeof AudioContext | undefined {
 /** Small Web Audio synth for playful, dependency-free game SFX (no audio files to load/host). */
 export function useGameSounds() {
   const ctxRef = useRef<AudioContext | null>(null);
+  const sfxEnabled = useUiStore((s) => s.sfxEnabled);
 
   const getCtx = useCallback(() => {
     const AudioContextClass = getAudioContextClass();
@@ -33,6 +35,7 @@ export function useGameSounds() {
 
   const playTones = useCallback(
     (steps: ToneStep[]) => {
+      if (!sfxEnabled) return;
       const ctx = getCtx();
       if (!ctx) return;
       const now = ctx.currentTime;
@@ -53,7 +56,7 @@ export function useGameSounds() {
         osc.stop(t1 + 0.02);
       }
     },
-    [getCtx],
+    [getCtx, sfxEnabled],
   );
 
   const playStep = useCallback(() => {
@@ -72,6 +75,11 @@ export function useGameSounds() {
       { freq: 220, start: 0, duration: 0.14, gain: 0.11, shape: 'square' },
       { freq: 160, start: 0.1, duration: 0.16, gain: 0.11, shape: 'square' },
     ]);
+  }, [playTones]);
+
+  /** Distinct from playError: a single dull "thud" for wall/obstacle collisions rather than a wrong-answer buzz. */
+  const playWallBump = useCallback(() => {
+    playTones([{ freq: 110, start: 0, duration: 0.12, gain: 0.13, shape: 'square' }]);
   }, [playTones]);
 
   const playLevelComplete = useCallback(() => {
@@ -97,5 +105,33 @@ export function useGameSounds() {
     playTones([{ freq: 500, start: 0, duration: 0.09, gain: 0.08, shape: 'triangle' }]);
   }, [playTones]);
 
-  return { playStep, playSuccessStep, playError, playLevelComplete, playGameComplete, playHint };
+  /** Universal "starting a game" jingle — short ascending arpeggio, distinct from level/game complete. */
+  const playGameStartJingle = useCallback(() => {
+    playTones([
+      { freq: 392, start: 0, duration: 0.1, gain: 0.1, shape: 'triangle' },
+      { freq: 523, start: 0.09, duration: 0.1, gain: 0.1, shape: 'triangle' },
+      { freq: 659, start: 0.18, duration: 0.16, gain: 0.11, shape: 'triangle' },
+    ]);
+  }, [playTones]);
+
+  /** Warm welcome chime for onboarding complete/skip. */
+  const playWelcome = useCallback(() => {
+    playTones([
+      { freq: 659, start: 0, duration: 0.14, gain: 0.1 },
+      { freq: 784, start: 0.12, duration: 0.14, gain: 0.1 },
+      { freq: 1046, start: 0.24, duration: 0.22, gain: 0.12 },
+    ]);
+  }, [playTones]);
+
+  return {
+    playStep,
+    playSuccessStep,
+    playError,
+    playWallBump,
+    playLevelComplete,
+    playGameComplete,
+    playHint,
+    playGameStartJingle,
+    playWelcome,
+  };
 }

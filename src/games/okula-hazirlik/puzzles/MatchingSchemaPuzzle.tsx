@@ -67,7 +67,7 @@ export function MatchingSchemaPuzzle({ spec, onSolved }: MatchingSchemaPuzzlePro
               onClick={() => pickLeft(pair.id)}
               disabled={isMatched}
               className={cn(
-                'rounded-lg border-2 bg-card px-3 py-2.5 text-center text-sm font-semibold shadow-sm transition',
+                'tap-target rounded-lg border-2 bg-card px-3 py-2.5 text-center text-sm font-semibold shadow-sm transition',
                 'border-border hover:border-violet-300',
                 isSelected && 'border-violet-500 bg-violet-50',
                 isMatched && 'border-emerald-500 bg-emerald-50 opacity-70',
@@ -89,7 +89,7 @@ export function MatchingSchemaPuzzle({ spec, onSolved }: MatchingSchemaPuzzlePro
               onClick={() => pickRight(pair.id)}
               disabled={isMatched}
               className={cn(
-                'rounded-lg border-2 bg-card px-3 py-2.5 text-center text-sm font-medium shadow-sm transition',
+                'tap-target rounded-lg border-2 bg-card px-3 py-2.5 text-center text-sm font-medium shadow-sm transition',
                 'border-border hover:border-violet-300',
                 isMatched && 'border-emerald-500 bg-emerald-50 opacity-70',
                 isWrong && 'border-rose-400 bg-rose-50',

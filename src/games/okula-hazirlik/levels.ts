@@ -12,6 +12,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'moveTo', targetObjectId: 'door-bathroom', actionLabel: 'Banyo kapısına git', feedbackLabel: 'Banyoya ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 30,
+    minSteps: 3,
   },
   {
     id: 'okul-2',
@@ -23,6 +25,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'sink', actionLabel: 'Elini yüzünü yıka', feedbackLabel: 'Elini yüzünü yıkadın!' },
     ],
     points: 15,
+    optimalDurationSeconds: 35,
+    minSteps: 2,
   },
   {
     id: 'okul-3',
@@ -35,6 +39,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'moveTo', targetObjectId: 'door-kitchen', actionLabel: 'Mutfak kapısına git', feedbackLabel: 'Mutfağa ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 30,
+    minSteps: 3,
   },
   {
     id: 'okul-4',
@@ -46,6 +52,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'table', actionLabel: 'Kahvaltı yap', feedbackLabel: 'Kahvaltı yaptın!' },
     ],
     points: 15,
+    optimalDurationSeconds: 35,
+    minSteps: 2,
   },
   {
     id: 'okul-5',
@@ -58,6 +66,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'moveTo', targetObjectId: 'door-child-room', actionLabel: 'Çocuk Odası kapısına git', feedbackLabel: 'Çocuk odasına ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 30,
+    minSteps: 3,
   },
   {
     id: 'okul-6',
@@ -72,6 +82,8 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'backpack', actionLabel: 'Kitabı çantaya koy', feedbackLabel: 'Kitabı çantaya koydun!' },
     ],
     points: 25,
+    optimalDurationSeconds: 90,
+    minSteps: 6,
   },
   {
     id: 'okul-7',
@@ -85,5 +97,7 @@ export const anaokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'door-exit', actionLabel: 'Evden çık', feedbackLabel: 'Okula gitmeye hazırsın!' },
     ],
     points: 25,
+    optimalDurationSeconds: 60,
+    minSteps: 4,
   },
 ];

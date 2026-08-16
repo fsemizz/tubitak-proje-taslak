@@ -1,12 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData } from 'react-router-dom';
 import { Sparkles, X } from 'lucide-react';
 import { GameCatalogGrid } from '@/features/catalog/components/GameCatalogGrid';
 import { CategoryFilterBar } from '@/features/catalog/components/CategoryFilterBar';
 import { SectionHeading } from '@/components/primitives/SectionHeading';
+import { ConfettiBurst } from '@/components/primitives/ConfettiBurst';
+import { OnboardingModal } from '@/features/onboarding/components/OnboardingModal';
 import { Button } from '@/components/ui/button';
 import { gameContentService } from '@/services/serviceProvider';
 import { useSessionStore } from '@/stores/useSessionStore';
+import { useBackgroundMusic, MENU_TRACK_ID } from '@/hooks/useBackgroundMusic';
+import { useGameSounds } from '@/hooks/useGameSounds';
+import { readJson, writeJson } from '@/services/storage/localStorageClient';
+import { STORAGE_KEYS } from '@/services/storage/keys';
 import type { GameDefinition } from '@/types/game';
 import type { GameCategory } from '@/types/common';
 
@@ -20,6 +26,31 @@ export default function HomeCatalogPage() {
   const currentStudent = useSessionStore((s) => s.currentStudent);
   const endSession = useSessionStore((s) => s.endSession);
   const [selectedCategory, setSelectedCategory] = useState<GameCategory | null>(null);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
+  const music = useBackgroundMusic();
+  const sounds = useGameSounds();
+
+  useEffect(() => {
+    music.start(MENU_TRACK_ID);
+    return () => music.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!readJson(STORAGE_KEYS.onboardingSeen, false)) {
+      setOnboardingOpen(true);
+    }
+  }, []);
+
+  function handleOnboardingDismiss() {
+    writeJson(STORAGE_KEYS.onboardingSeen, true);
+    setOnboardingOpen(false);
+    // A discrete click event, well after the menu music already settled in — the chime layers
+    // cleanly instead of colliding with it.
+    sounds.playWelcome();
+    setConfettiTrigger((t) => t + 1);
+  }
 
   const categories = useMemo(
     () => Array.from(new Set(games.map((g) => g.category))),
@@ -32,7 +63,8 @@ export default function HomeCatalogPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <section className="overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-10 text-white sm:px-10 sm:py-14">
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-10 text-white sm:px-10 sm:py-14">
+        <ConfettiBurst trigger={confettiTrigger} />
         <div className="flex items-center gap-2 text-sm font-semibold text-white/80">
           <Sparkles className="size-4" /> Bilgisayarsız Kodlama Platformu
         </div>
@@ -64,6 +96,12 @@ export default function HomeCatalogPage() {
         <CategoryFilterBar categories={categories} selected={selectedCategory} onSelect={setSelectedCategory} />
         <GameCatalogGrid games={filteredGames} hasActiveStudent={Boolean(currentStudent)} />
       </section>
+
+      <OnboardingModal
+        open={onboardingOpen}
+        onOpenChange={setOnboardingOpen}
+        onDismiss={handleOnboardingDismiss}
+      />
     </div>
   );
 }

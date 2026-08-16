@@ -8,6 +8,8 @@ import { useGameProgressStore } from '@/stores/useGameProgressStore';
 import { useSessionStore } from '@/stores/useSessionStore';
 import { resultsService } from '@/services/serviceProvider';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { useBackgroundMusic, GAME_START_MUSIC_DELAY_MS } from '@/hooks/useBackgroundMusic';
+import { useLevelTimer } from '@/hooks/useLevelTimer';
 import { calculateSimpleLevelStars, calculateStarRating, sumPoints, sumTime } from '@/lib/scoring';
 import { buildGameResultsPath, ROUTE_PATHS } from '@/app/routePaths';
 import type { GameDefinition, GameLevel } from '@/types/game';
@@ -22,6 +24,7 @@ export function GameShell({ game, levels }: GameShellProps) {
   const navigate = useNavigate();
   const currentStudent = useSessionStore((s) => s.currentStudent);
   const sounds = useGameSounds();
+  const music = useBackgroundMusic();
   const { activeGameId, activeLevelIndex, levelResults, startGame, recordLevelResult, goToNextLevel, finishGame, resetProgress } =
     useGameProgressStore();
 
@@ -32,12 +35,16 @@ export function GameShell({ game, levels }: GameShellProps) {
     if (activeGameId !== game.id) {
       startGame(game.id);
     }
+    sounds.playGameStartJingle();
+    music.start(game.id, GAME_START_MUSIC_DELAY_MS);
+    return () => music.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.id]);
 
   const PlayerComponent = gameRegistry[game.id]?.PlayerComponent;
   const currentLevel = levels[activeLevelIndex];
   const isLastLevel = activeLevelIndex + 1 >= levels.length;
+  const liveElapsedSeconds = useLevelTimer(currentLevel?.id ?? activeLevelIndex);
 
   function handleComplete(result: LevelAttemptResultInput) {
     recordLevelResult(result);
@@ -88,15 +95,24 @@ export function GameShell({ game, levels }: GameShellProps) {
         totalLevels={levels.length}
         currentIndex={activeLevelIndex}
         onRequestExit={() => setExitDialogOpen(true)}
+        timerSeconds={pendingResult ? undefined : liveElapsedSeconds}
+        timerOptimalSeconds={currentLevel?.optimalDurationSeconds}
       />
 
       {pendingResult ? (
         <LevelCompleteInterstitial
           levelTitle={currentLevel.title}
-          starRating={calculateSimpleLevelStars(pendingResult.attempts, pendingResult.hintUsed)}
+          starRating={calculateSimpleLevelStars(
+            pendingResult.attempts,
+            pendingResult.hintUsed,
+            pendingResult.timeSpentSeconds,
+            currentLevel.optimalDurationSeconds,
+          )}
           pointsEarned={pendingResult.pointsEarned}
           attempts={pendingResult.attempts}
           hintUsed={pendingResult.hintUsed}
+          timeSpentSeconds={pendingResult.timeSpentSeconds}
+          optimalDurationSeconds={currentLevel.optimalDurationSeconds}
           isLastLevel={isLastLevel}
           onNext={handleContinue}
         />

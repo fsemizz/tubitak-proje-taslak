@@ -78,7 +78,7 @@ export function OrderedChoicePuzzle({ spec, onSolved }: OrderedChoicePuzzleProps
             onClick={() => place(item.id)}
             disabled={solved}
             className={cn(
-              'flex items-center gap-1.5 rounded-xl border-2 border-violet-200 bg-white px-3 py-2.5 text-sm font-semibold text-violet-700 shadow-sm transition hover:border-violet-400',
+              'tap-target flex items-center gap-1.5 rounded-xl border-2 border-violet-200 bg-white px-3 py-2.5 text-sm font-semibold text-violet-700 shadow-sm transition hover:border-violet-400',
             )}
           >
             <span className="text-lg">{item.icon}</span> {item.label}

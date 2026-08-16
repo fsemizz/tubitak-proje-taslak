@@ -7,4 +7,5 @@ export const STORAGE_KEYS = {
   teacher: `${NAMESPACE}.teacher`,
   ui: `${NAMESPACE}.ui`,
   seeded: `${NAMESPACE}.seeded`,
+  onboardingSeen: `${NAMESPACE}.onboardingSeen`,
 } as const;

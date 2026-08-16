@@ -5,13 +5,15 @@ export const ilkokuluLevels: HouseNavLevel[] = [
     id: 'ilk-1',
     order: 1,
     title: 'Banyoya Git',
-    instructions: 'Ev daha büyük! Komutları kullanarak karakteri Banyo kapısına götür.',
+    instructions: 'Komutları kullanarak karakteri Banyo kapısına götür.',
     mapRoomId: 'main7',
     startAtObjectId: 'door-child-room',
     taskSteps: [
       { kind: 'moveTo', targetObjectId: 'door-bathroom', actionLabel: 'Banyo kapısına git', feedbackLabel: 'Banyoya ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 45,
+    minSteps: 4,
   },
   {
     id: 'ilk-2',
@@ -23,6 +25,8 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'sink', actionLabel: 'Elini yüzünü yıka', feedbackLabel: 'Elini yüzünü yıkadın!' },
     ],
     points: 15,
+    optimalDurationSeconds: 50,
+    minSteps: 3,
   },
   {
     id: 'ilk-3',
@@ -35,6 +39,8 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       { kind: 'moveTo', targetObjectId: 'door-kitchen', actionLabel: 'Mutfak kapısına git', feedbackLabel: 'Mutfağa ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 55,
+    minSteps: 5,
   },
   {
     id: 'ilk-4',
@@ -52,6 +58,8 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       },
     ],
     points: 15,
+    optimalDurationSeconds: 60,
+    minSteps: 2,
   },
   {
     id: 'ilk-5',
@@ -64,6 +72,8 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       { kind: 'moveTo', targetObjectId: 'door-child-room', actionLabel: 'Çocuk Odası kapısına git', feedbackLabel: 'Çocuk odasına ulaştın!' },
     ],
     points: 10,
+    optimalDurationSeconds: 45,
+    minSteps: 4,
   },
   {
     id: 'ilk-6',
@@ -95,6 +105,8 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       },
     ],
     points: 30,
+    optimalDurationSeconds: 150,
+    minSteps: 8,
   },
   {
     id: 'ilk-7',
@@ -108,5 +120,7 @@ export const ilkokuluLevels: HouseNavLevel[] = [
       { kind: 'enterAt', targetObjectId: 'door-exit', actionLabel: 'Evden çık', feedbackLabel: 'Okula gitmeye hazırsın!' },
     ],
     points: 25,
+    optimalDurationSeconds: 70,
+    minSteps: 5,
   },
 ];

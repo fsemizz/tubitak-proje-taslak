@@ -17,7 +17,7 @@ export const sequencingMeta: GameDefinition = {
   ],
   minGrade: 0,
   maxGrade: 2,
-  estimatedMinutes: 6,
-  levelCount: 5,
+  estimatedMinutes: 8,
+  levelCount: 6,
   status: 'available',
 };

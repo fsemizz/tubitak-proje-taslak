@@ -1,7 +1,8 @@
-import { ArrowRight, Lightbulb, Star, Trophy } from 'lucide-react';
+import { ArrowRight, Clock3, Lightbulb, Star, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CelebrationBurst } from '@/components/primitives/CelebrationBurst';
+import { formatDuration } from '@/lib/scoring';
 import { cn } from '@/lib/utils';
 
 interface LevelCompleteInterstitialProps {
@@ -10,6 +11,8 @@ interface LevelCompleteInterstitialProps {
   pointsEarned: number;
   attempts: number;
   hintUsed?: boolean;
+  timeSpentSeconds?: number;
+  optimalDurationSeconds?: number;
   isLastLevel: boolean;
   onNext: () => void;
 }
@@ -21,6 +24,8 @@ export function LevelCompleteInterstitial({
   pointsEarned,
   attempts,
   hintUsed,
+  timeSpentSeconds,
+  optimalDurationSeconds,
   isLastLevel,
   onNext,
 }: LevelCompleteInterstitialProps) {
@@ -50,6 +55,13 @@ export function LevelCompleteInterstitial({
           <div className="text-xs font-medium text-muted-foreground">
             {attempts === 1 ? 'İlk denemede başardın!' : `${attempts}. denemede başardın.`}
           </div>
+          {timeSpentSeconds !== undefined && (
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Clock3 className="size-3.5 shrink-0" />
+              Süren: {formatDuration(timeSpentSeconds)}
+              {optimalDurationSeconds !== undefined && ` (hedef: ${formatDuration(optimalDurationSeconds)})`}
+            </div>
+          )}
           {hintUsed && (
             <div className="flex items-center gap-2 text-xs font-medium text-amber-600">
               <Lightbulb className="size-3.5 shrink-0" /> İpucu kullandın

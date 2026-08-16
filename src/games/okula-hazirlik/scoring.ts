@@ -11,6 +11,8 @@ export function calculateLevelStars(
   pathEfficiencyPct: number,
   hintUsed: boolean,
   planningEfficiencyPct: number,
+  timeSpentSeconds?: number,
+  optimalDurationSeconds?: number,
 ): 1 | 2 | 3 {
   let stars: 1 | 2 | 3;
   // Top marks require efficient planning too: batching a whole step into one run beats trial-and-error
@@ -22,6 +24,16 @@ export function calculateLevelStars(
   } else {
     stars = 1;
   }
+
+  // Time is only ever a bonus-reducer, same spirit as calculateSimpleLevelStars in lib/scoring.ts —
+  // running well over the target time can pull a would-be 3-star run down to 2, never lower, and
+  // never turns a correct solve into a failure.
+  if (stars === 3 && optimalDurationSeconds && timeSpentSeconds !== undefined) {
+    if (timeSpentSeconds > optimalDurationSeconds * 1.5) {
+      stars = 2;
+    }
+  }
+
   if (hintUsed) {
     stars = Math.max(1, stars - 1) as 1 | 2 | 3;
   }

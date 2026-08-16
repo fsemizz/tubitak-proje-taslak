@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Check, Lightbulb, RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShakeOnError } from '@/components/primitives/ShakeOnError';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { pickSequencingVariant } from './variants';
 import { cn } from '@/lib/utils';
 import type { GamePlayerProps } from '../types';
 import type { SequencingLevel } from '@/types/game';
@@ -19,10 +20,11 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function SequencingGamePlayer({
-  level,
+  level: shell,
   onComplete,
 }: GamePlayerProps<SequencingLevel>) {
   const sounds = useGameSounds();
+  const level = useMemo(() => ({ ...shell, ...pickSequencingVariant(shell.id) }), [shell.id]);
   const [pool, setPool] = useState(() => shuffle(level.items));
   const [placed, setPlaced] = useState<typeof level.items>([]);
   const [attempts, setAttempts] = useState(0);
@@ -106,10 +108,10 @@ export default function SequencingGamePlayer({
               <p className="text-sm font-semibold text-muted-foreground">Sıralaman (sürükleyerek de değiştirebilirsin):</p>
             </div>
             <Reorder.Group
-              axis="x"
+              axis="y"
               values={placed}
               onReorder={setPlaced}
-              className="flex min-h-16 flex-wrap gap-2 rounded-lg border-2 border-dashed border-border p-3"
+              className="flex min-h-16 flex-col gap-2 rounded-lg border-2 border-dashed border-border p-3"
             >
               <AnimatePresence>
                 {placed.map((item, idx) => (
@@ -120,14 +122,26 @@ export default function SequencingGamePlayer({
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    whileDrag={{ scale: 1.06, boxShadow: '0 6px 16px rgba(0,0,0,0.18)' }}
-                    onClick={() => undoItem(item.id)}
-                    className="tap-target flex cursor-grab items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm active:cursor-grabbing"
+                    whileDrag={{ scale: 1.03, boxShadow: '0 6px 16px rgba(0,0,0,0.18)' }}
+                    style={{ touchAction: 'none' }}
+                    className="tap-target flex w-full cursor-grab items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm active:cursor-grabbing"
                   >
-                    <span className="flex size-5 items-center justify-center rounded-full bg-white/25 text-xs">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-white/25 text-xs">
                       {idx + 1}
                     </span>
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    <button
+                      type="button"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        undoItem(item.id);
+                      }}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-md text-white/70 hover:bg-white/10 hover:text-white"
+                      aria-label={`${item.label} adımını geri al`}
+                    >
+                      <X className="size-4" />
+                    </button>
                   </Reorder.Item>
                 ))}
               </AnimatePresence>

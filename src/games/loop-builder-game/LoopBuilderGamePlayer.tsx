@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Bot, Flag, Minus, Plus, Play, Trash2, Undo2, X, Sparkles } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Bot, Flag, Lightbulb, Minus, Plus, Play, Trash2, Undo2, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { createId } from '@/lib/id';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { pickLoopVariant } from './variants';
 import type { GamePlayerProps } from '../types';
 import type { LoopLevel, LoopDirection, Position } from '@/types/game';
 import type { LoopCommandEntry } from './types';
@@ -26,8 +27,35 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerProps<LoopLevel>) {
+/** BFS over the level grid — returns the first-step direction of a shortest path from `from` to `goal`. */
+function bfsNextStep(grid: LoopLevel['grid'], from: Position, goal: Position): LoopDirection | null {
+  const rows = grid.length;
+  const cols = grid[0]?.length ?? 0;
+  const key = (p: Position) => `${p.row},${p.col}`;
+  const visited = new Set<string>([key(from)]);
+  const queue: { pos: Position; firstStep: LoopDirection | null }[] = [{ pos: from, firstStep: null }];
+
+  while (queue.length > 0) {
+    const { pos, firstStep } = queue.shift()!;
+    if (pos.row === goal.row && pos.col === goal.col) return firstStep;
+
+    for (const dir of Object.keys(DIR_DELTA) as LoopDirection[]) {
+      const delta = DIR_DELTA[dir];
+      const next = { row: pos.row + delta.row, col: pos.col + delta.col };
+      if (next.row < 0 || next.row >= rows || next.col < 0 || next.col >= cols) continue;
+      if (grid[next.row][next.col] === 'wall') continue;
+      const nextKey = key(next);
+      if (visited.has(nextKey)) continue;
+      visited.add(nextKey);
+      queue.push({ pos: next, firstStep: firstStep ?? dir });
+    }
+  }
+  return null;
+}
+
+export default function LoopBuilderGamePlayer({ level: shell, onComplete }: GamePlayerProps<LoopLevel>) {
   const sounds = useGameSounds();
+  const level = useMemo(() => ({ ...shell, ...pickLoopVariant(shell.id) }), [shell.id]);
   const [entries, setEntries] = useState<LoopCommandEntry[]>([]);
   const [attempts, setAttempts] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -37,6 +65,7 @@ export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerP
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [shakeToken, setShakeToken] = useState(0);
   const [successToken, setSuccessToken] = useState(0);
+  const [hintUsed, setHintUsed] = useState(false);
   const [startedAt] = useState(() => Date.now());
 
   const cols = level.grid[0]?.length ?? 0;
@@ -85,6 +114,15 @@ export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerP
     setEntries([]);
   }
 
+  function useHint() {
+    if (isRunning || entries.length >= level.maxEntries) return;
+    const dir = bfsNextStep(level.grid, robotPos, level.goal);
+    if (!dir) return;
+    sounds.playHint();
+    setHintUsed(true);
+    setEntries((prev) => [...prev, { id: createId(), direction: dir, count: 1 }]);
+  }
+
   async function run() {
     if (entries.length === 0 || isRunning) return;
     setIsRunning(true);
@@ -130,7 +168,7 @@ export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerP
       sounds.playSuccessStep();
       setSuccessToken((t) => t + 1);
       const timeSpentSeconds = Math.round((Date.now() - startedAt) / 1000);
-      const pointsEarned = newAttempts === 1 ? level.points : Math.round(level.points * 0.6);
+      const pointsEarned = newAttempts === 1 && !hintUsed ? level.points : Math.round(level.points * 0.6);
       onComplete({
         levelId: level.id,
         levelOrder: level.order,
@@ -138,13 +176,18 @@ export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerP
         attempts: newAttempts,
         pointsEarned,
         timeSpentSeconds,
+        hintUsed,
       });
       return;
     }
 
-    sounds.playError();
     setErrorMessage(failed ? 'Duvara çarptın ya da sınırın dışına çıktın.' : 'Komutların bitti ama bayrağa ulaşamadın.');
-    if (failed) setShakeToken((t) => t + 1);
+    if (failed) {
+      sounds.playWallBump();
+      setShakeToken((t) => t + 1);
+    } else {
+      sounds.playError();
+    }
   }
 
   const width = cols * CELL_SIZE;
@@ -236,6 +279,15 @@ export default function LoopBuilderGamePlayer({ level, onComplete }: GamePlayerP
               <DirButton direction="down" onClick={addCommand} disabled={isRunning || entries.length >= level.maxEntries} />
               <DirButton direction="right" onClick={addCommand} disabled={isRunning || entries.length >= level.maxEntries} />
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={useHint}
+              disabled={isRunning || entries.length >= level.maxEntries}
+              className="mt-2 w-full"
+            >
+              <Lightbulb className="size-4" /> İpucu Al
+            </Button>
           </div>
 
           <div className="flex flex-col gap-1.5">

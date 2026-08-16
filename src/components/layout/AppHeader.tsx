@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { APP_NAME } from '@/lib/constants';
 import { ROUTE_PATHS } from '@/app/routePaths';
 import { useOnlineStatus } from '@/hooks/use-online-status';
+import { SoundControls } from '@/components/primitives/SoundControls';
 import { cn } from '@/lib/utils';
 
 export function AppHeader() {
@@ -36,6 +37,8 @@ export function AppHeader() {
             {isOnline ? <Wifi className="size-3.5" /> : <WifiOff className="size-3.5" />}
             {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
           </span>
+
+          <SoundControls buttonClassName="text-white hover:bg-white/10 hover:text-white" />
 
           <Button
             variant="outline"

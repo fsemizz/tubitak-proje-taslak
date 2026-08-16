@@ -9,7 +9,8 @@ export type GameIconKey =
   | 'loop'
   | 'conditional'
   | 'matching'
-  | 'home';
+  | 'home'
+  | 'flow';
 
 export interface GameColorTheme {
   gradientFrom: string;
@@ -41,6 +42,10 @@ interface LevelBase {
   difficulty: Difficulty;
   instructions: string;
   points: number;
+  /** Target completion time for the 3-star time-closeness bonus. Going over never fails the level. */
+  optimalDurationSeconds: number;
+  /** Fewest steps/items a correct solution needs (informational — shown alongside the live timer). */
+  minSteps: number;
 }
 
 export interface SequenceItem {
@@ -124,12 +129,28 @@ export interface MatchingLevel extends LevelBase {
   pairs: MatchPair[];
 }
 
+export type FlowBlockKind = 'condition' | 'action' | 'loop';
+
+export interface FlowBlock {
+  id: string;
+  label: string;
+  kind: FlowBlockKind;
+}
+
+export interface FlowchartLevel extends LevelBase {
+  type: 'flowchart';
+  scenario: string;
+  availableBlocks: FlowBlock[];
+  correctSequence: string[];
+}
+
 export type GameLevel =
   | SequencingLevel
   | PatternLevel
   | DebugLevel
   | LoopLevel
   | ConditionalLevel
-  | MatchingLevel;
+  | MatchingLevel
+  | FlowchartLevel;
 
 export type GameLevelType = GameLevel['type'];

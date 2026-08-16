@@ -17,7 +17,7 @@ export const conditionalMeta: GameDefinition = {
   ],
   minGrade: 0,
   maxGrade: 2,
-  estimatedMinutes: 5,
-  levelCount: 5,
+  estimatedMinutes: 6,
+  levelCount: 6,
   status: 'available',
 };
