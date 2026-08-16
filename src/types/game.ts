@@ -129,19 +129,42 @@ export interface MatchingLevel extends LevelBase {
   pairs: MatchPair[];
 }
 
-export type FlowBlockKind = 'condition' | 'action' | 'loop';
+export type FlowBlockKind = 'condition' | 'loop' | 'action' | 'result';
+export type FlowComparisonOp = '>' | '>=' | '<' | '<=' | '==';
 
-export interface FlowBlock {
+/** A named numeric fact from the scenario a "condition" block can compare against — some are the
+ * one the rule actually depends on, others are plausible-looking distractors offered in the same dropdown. */
+export interface FlowVariable {
   id: string;
   label: string;
+  value: number;
+}
+
+/** Whatever the student has configured a placed block to be — only the fields relevant to its own
+ * kind are ever set. */
+export interface FlowPlacedBlockConfig {
+  variableId?: string;
+  operator?: FlowComparisonOp;
+  compareValue?: number;
+  loopCount?: number;
+  actionId?: string;
+}
+
+/** One position in the answer key: which block kind belongs here, and how it must be configured. */
+export interface FlowExpectedStep {
   kind: FlowBlockKind;
+  config: FlowPlacedBlockConfig;
 }
 
 export interface FlowchartLevel extends LevelBase {
   type: 'flowchart';
   scenario: string;
-  availableBlocks: FlowBlock[];
-  correctSequence: string[];
+  variables: FlowVariable[];
+  actionOptions: { id: string; label: string }[];
+  operatorOptions: FlowComparisonOp[];
+  expectedSteps: FlowExpectedStep[];
+  /** Shown in the result block once the program runs correctly; "{count}" is replaced with the loop's configured count. */
+  resultTemplate: string;
 }
 
 export type GameLevel =

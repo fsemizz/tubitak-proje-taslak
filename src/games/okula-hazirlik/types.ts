@@ -66,6 +66,8 @@ export type PuzzleSpec =
       groupCount: number;
       itemsPerGroup: number;
       askTotal: boolean; // false = "how many groups", true = "how many items in total"
+      /** Extra loose items outside the grouped boxes, only used at higher difficulty tiers - must be added to the total. */
+      extraItems?: number;
       options: string[];
       correctAnswer: string;
     };

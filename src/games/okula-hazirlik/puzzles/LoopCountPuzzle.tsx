@@ -43,7 +43,21 @@ export function LoopCountPuzzle({ spec, onSolved }: LoopCountPuzzleProps) {
             ))}
           </div>
         ))}
+        {!!spec.extraItems && (
+          <div className="flex items-center gap-1 rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 px-2.5 py-2 shadow-sm">
+            {Array.from({ length: spec.extraItems }).map((_, itemIdx) => (
+              <span key={itemIdx} className="text-2xl leading-none">
+                {spec.icon}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
+      {!!spec.extraItems && (
+        <p className="-mt-3 text-xs font-semibold text-amber-700">
+          Kutuların dışında duran {spec.extraItems} taneyi de unutma!
+        </p>
+      )}
 
       <ShakeOnError trigger={wrongToken} className="flex flex-wrap justify-center gap-3">
         {spec.options.map((opt) => (

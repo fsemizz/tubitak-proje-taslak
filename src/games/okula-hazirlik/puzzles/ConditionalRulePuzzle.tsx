@@ -42,7 +42,10 @@ export function ConditionalRulePuzzle({ spec, onSolved }: ConditionalRulePuzzleP
         </p>
       </div>
 
-      <ShakeOnError trigger={wrongToken} className="grid grid-cols-3 gap-3">
+      <ShakeOnError
+        trigger={wrongToken}
+        className={cn('grid gap-3', spec.options.length > 4 ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-3')}
+      >
         {spec.options.map((opt) => {
           const isWrong = wrongIds.has(opt.id);
           const isSolved = solvedId === opt.id;

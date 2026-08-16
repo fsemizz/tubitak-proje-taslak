@@ -142,9 +142,12 @@ export function OkulaHazirlikGameRoot({ game }: OkulaHazirlikGameRootProps) {
     // Every miniPuzzle step gets its own freshly-generated spec, same "regenerate at level-start,
     // stay stable across retries" rule as the maps themselves.
     const freshPuzzles: Record<number, PuzzleSpec> = {};
+    // order 1-2 -> tier 1 (easy), 3-5 -> tier 2 (medium), 6-7 -> tier 3 (hard) - the only difficulty
+    // signal the generator gets, since levels have no explicit difficulty field of their own.
+    const difficultyTier: 1 | 2 | 3 = lvl.order <= 2 ? 1 : lvl.order <= 5 ? 2 : 3;
     lvl.taskSteps.forEach((step, idx) => {
       if (step.kind === 'miniPuzzle' && step.puzzleType) {
-        freshPuzzles[idx] = generatePuzzle(step.puzzleType, activeSchoolLevel);
+        freshPuzzles[idx] = generatePuzzle(step.puzzleType, activeSchoolLevel, difficultyTier, step.targetObjectId);
       }
     });
     setCurrentMaps(freshMaps);

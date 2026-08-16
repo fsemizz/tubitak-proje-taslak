@@ -22,11 +22,18 @@ export const ilkokuluLevels: HouseNavLevel[] = [
     instructions: 'Lavaboya git ve elini yüzünü yıka. Dikkat, odada seni oyalayacak eşyalar da var!',
     mapRoomId: 'bathroom7',
     taskSteps: [
+      {
+        kind: 'miniPuzzle',
+        targetObjectId: 'sink',
+        actionLabel: 'Ellerini yıkamadan önce sırayı bul',
+        feedbackLabel: 'Doğru sırayla yıkadın!',
+        puzzleType: 'orderedChoice',
+      },
       { kind: 'enterAt', targetObjectId: 'sink', actionLabel: 'Elini yüzünü yıka', feedbackLabel: 'Elini yüzünü yıkadın!' },
     ],
-    points: 15,
-    optimalDurationSeconds: 50,
-    minSteps: 3,
+    points: 20,
+    optimalDurationSeconds: 65,
+    minSteps: 4,
   },
   {
     id: 'ilk-3',
